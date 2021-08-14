@@ -8,8 +8,10 @@ import {
   createTotalPriceTemplate,
   createTripSortTemplate
 } from './view/markup-proxy.js';
+import {generatePointInfo} from './mock/route-mock.js';
 
-const POINTS_COUNT = 3;
+const POINTS_COUNT = 15;
+const mockedPoints = new Array(POINTS_COUNT).fill().map(generatePointInfo);
 
 const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
@@ -35,12 +37,12 @@ renderContainer(siteTripEventsElement, siteEventsListElement, 'beforeend');
 
 render(siteNavigationElement, createMenuTemplate(), 'beforeend');
 render(siteFiltersElement, createFiltersTemplate(), 'beforeend');
-render(siteMainRouteElement, createRouteInfoTemplate(), 'beforeend');
-render(siteMainRouteElement, createTotalPriceTemplate(), 'beforeend');
+render(siteMainRouteElement, createRouteInfoTemplate(mockedPoints), 'beforeend');
+render(siteMainRouteElement, createTotalPriceTemplate(mockedPoints), 'beforeend');
 render(siteTripEventsElement, createTripSortTemplate(), 'afterbegin');
-render(siteEventsListElement, createEditPointTemplate(), 'beforeend');
-render(siteEventsListElement, createAddNewPointTemplate(), 'beforeend');
+render(siteEventsListElement, createAddNewPointTemplate(mockedPoints[0]), 'beforeend');
 
-for (let i = 0; i < POINTS_COUNT; i++) {
-  render(siteEventsListElement, createRoutePointTemplate(), 'beforeend');
+for (let i = 1; i < POINTS_COUNT; i++) {
+  i === 1 ? render(siteEventsListElement, createEditPointTemplate(mockedPoints[0]), 'beforeend')
+    : render(siteEventsListElement, createRoutePointTemplate(mockedPoints[i]), 'beforeend');
 }
