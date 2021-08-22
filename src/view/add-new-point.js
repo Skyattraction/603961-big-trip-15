@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 import { generateCityList, generateEventTypeList, generateOfferList, generatePhotosList } from '../mock/route-mock';
+import {createElement} from '../utils.js';
 
-export const createAddNewPointTemplate = (point) => {
+const createAddNewPointTemplate = (point) => {
   const {destination, offer} = point;
   const type = 'flight';
   const dateMock = dayjs().format('DD/MM/YY HH:mm');
@@ -76,3 +77,26 @@ export const createAddNewPointTemplate = (point) => {
     </form>
   </li>`;
 };
+
+export default class AddNewPoint {
+  constructor(point) {
+    this._point = point;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createAddNewPointTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

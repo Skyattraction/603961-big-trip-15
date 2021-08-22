@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
-import {generateDuration} from './utils.js';
+import {generateDuration, createElement} from '../utils.js';
 
-export const createRoutePointTemplate = (point) => {
+const createRoutePointTemplate = (point) => {
   const {dateFrom, dateTo, type, name, basePrice, offer, isFavorite} = point;
   const dateLabel = dateFrom !== null
     ? dayjs(dateFrom).format('YYYY-MM-DD')
@@ -77,3 +77,27 @@ export const createRoutePointTemplate = (point) => {
     </div>
   </li>`;
 };
+
+
+export default class RoutePoint {
+  constructor(point) {
+    this._point = point;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createRoutePointTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
