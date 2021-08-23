@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
+import {createElement} from '../utils.js';
 
-export const createRouteInfoTemplate = (points) => {
+const createRouteInfoTemplate = (points) => {
   const generateTitle = () => {
     let title = '';
     for (let i = 0; i < points.length; i++) {
@@ -34,3 +35,27 @@ export const createRouteInfoTemplate = (points) => {
     <p class="trip-info__dates">${generateDates()}</p>
   </div>`;
 };
+
+
+export default class RouteInfo {
+  constructor(points) {
+    this._points = points;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createRouteInfoTemplate(this._points);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

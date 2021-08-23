@@ -1,48 +1,62 @@
 import {
-  createAddNewPointTemplate,
-  createEditPointTemplate,
-  createFiltersTemplate,
-  createMenuTemplate,
-  createRouteInfoTemplate,
-  createRoutePointTemplate,
-  createTotalPriceTemplate,
-  createTripSortTemplate
+  AddNewPointView,
+  EditPointView,
+  EventsListView,
+  FiltersView,
+  MainRouteView,
+  MenuView,
+  RouteInfoView,
+  RoutePointView,
+  TotalPriceView,
+  TripSortView
 } from './view/markup-proxy.js';
 import {generatePointInfo} from './mock/route-mock.js';
+import {render, RenderPosition} from './utils.js';
 
 const POINTS_COUNT = 15;
 const mockedPoints = new Array(POINTS_COUNT).fill().map(generatePointInfo);
-
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
-
-const renderContainer = (container, template, place) => {
-  container.insertAdjacentElement(place, template);
-};
 
 const siteHeaderElement = document.querySelector('.trip-main');
 const siteTripEventsElement = document.querySelector('.trip-events');
 const siteNavigationElement = siteHeaderElement.querySelector('.trip-controls__navigation');
 const siteFiltersElement = siteHeaderElement.querySelector('.trip-controls__filters');
 
-const siteMainRouteElement = document.createElement('section');
-siteMainRouteElement.className = 'trip-main__trip-info trip-info';
+const siteMainRouteComponent = new MainRouteView();
+const siteEventsListComponent = new EventsListView();
 
-const siteEventsListElement = document.createElement('ul');
-siteEventsListElement.className = 'trip-events__list';
+const renderPoint = (pointsListElement, point) => {
+  const siteRoutePointComponent = new RoutePointView(point);
+  const siteEditPointComponent = new EditPointView(point);
 
-renderContainer(siteHeaderElement, siteMainRouteElement, 'afterbegin');
-renderContainer(siteTripEventsElement, siteEventsListElement, 'beforeend');
+  const replacePointToEditForm = () => {
+    pointsListElement.replaceChild(siteEditPointComponent.getElement(), siteRoutePointComponent.getElement());
+  };
 
-render(siteNavigationElement, createMenuTemplate(), 'beforeend');
-render(siteFiltersElement, createFiltersTemplate(), 'beforeend');
-render(siteMainRouteElement, createRouteInfoTemplate(mockedPoints), 'beforeend');
-render(siteMainRouteElement, createTotalPriceTemplate(mockedPoints), 'beforeend');
-render(siteTripEventsElement, createTripSortTemplate(), 'afterbegin');
-render(siteEventsListElement, createAddNewPointTemplate(mockedPoints[0]), 'beforeend');
+  const replaceEditFormToPoint = () => {
+    pointsListElement.replaceChild(siteRoutePointComponent.getElement(), siteEditPointComponent.getElement());
+  };
+
+  siteRoutePointComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+    replacePointToEditForm();
+  });
+
+  siteEditPointComponent.getElement().querySelector('form').addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    replaceEditFormToPoint();
+  });
+
+  render(pointsListElement, siteRoutePointComponent.getElement(), RenderPosition.BEFOREEND);
+};
+
+render(siteHeaderElement, siteMainRouteComponent.getElement(), RenderPosition.AFTERBEGIN);
+render(siteTripEventsElement, siteEventsListComponent.getElement(), RenderPosition.BEFOREEND);
+render(siteNavigationElement, new MenuView().getElement(), RenderPosition.BEFOREEND);
+render(siteFiltersElement, new FiltersView().getElement(), RenderPosition.BEFOREEND);
+render(siteMainRouteComponent.getElement(), new RouteInfoView(mockedPoints).getElement(), RenderPosition.BEFOREEND);
+render(siteMainRouteComponent.getElement(), new TotalPriceView(mockedPoints).getElement(), RenderPosition.BEFOREEND);
+render(siteTripEventsElement, new TripSortView().getElement(), RenderPosition.AFTERBEGIN);
+render(siteEventsListComponent.getElement(), new AddNewPointView(mockedPoints[0]).getElement(), RenderPosition.BEFOREEND);
 
 for (let i = 1; i < POINTS_COUNT; i++) {
-  i === 1 ? render(siteEventsListElement, createEditPointTemplate(mockedPoints[0]), 'beforeend')
-    : render(siteEventsListElement, createRoutePointTemplate(mockedPoints[i]), 'beforeend');
+  renderPoint(siteEventsListComponent.getElement(), mockedPoints[i]);
 }

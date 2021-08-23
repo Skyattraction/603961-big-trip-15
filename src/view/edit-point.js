@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 import { generateCityList, generateEventTypeList, generateOfferList } from '../mock/route-mock';
+import {createElement} from '../utils.js';
 
-export const createEditPointTemplate = (point) => {
+const createEditPointTemplate = (point) => {
   const {dateFrom, dateTo, type, name, basePrice, destination, offer} = point;
 
   const dateFromTime = dateFrom !== null
@@ -78,3 +79,26 @@ export const createEditPointTemplate = (point) => {
     </form>
   </li>`;
 };
+
+export default class EditPoint {
+  constructor(point) {
+    this._point = point;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditPointTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

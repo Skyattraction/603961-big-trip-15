@@ -1,8 +1,10 @@
-export * from './add-new-point.js';
-export * from './edit-point.js';
-export * from './filters.js';
-export * from './menu.js';
-export * from './route-info.js';
-export * from './route-point.js';
-export * from './total-price.js';
-export * from './trip-sort.js';
+export {default  as AddNewPointView} from './add-new-point.js';
+export {default  as EditPointView} from './edit-point.js';
+export {default  as EventsListView} from './events-list.js';
+export {default  as FiltersView} from './filters.js';
+export {default  as MainRouteView} from './main-route.js';
+export {default  as MenuView} from './menu.js';
+export {default  as RouteInfoView} from './route-info.js';
+export {default  as RoutePointView} from './route-point.js';
+export {default  as TotalPriceView} from './total-price.js';
+export {default  as TripSortView} from './trip-sort.js';
