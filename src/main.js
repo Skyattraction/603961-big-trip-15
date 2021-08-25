@@ -5,6 +5,7 @@ import {
   FiltersView,
   MainRouteView,
   MenuView,
+  NoPointsView,
   RouteInfoView,
   RoutePointView,
   TotalPriceView,
@@ -15,6 +16,7 @@ import {render, RenderPosition} from './utils.js';
 
 const POINTS_COUNT = 15;
 const mockedPoints = new Array(POINTS_COUNT).fill().map(generatePointInfo);
+const noPointsMessage = 'Click New Event to create your first point';
 
 const siteHeaderElement = document.querySelector('.trip-main');
 const siteTripEventsElement = document.querySelector('.trip-events');
@@ -36,27 +38,52 @@ const renderPoint = (pointsListElement, point) => {
     pointsListElement.replaceChild(siteRoutePointComponent.getElement(), siteEditPointComponent.getElement());
   };
 
+  const onEscKeyDown = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      evt.preventDefault();
+      replaceEditFormToPoint();
+      document.removeEventListener('keydown', onEscKeyDown);
+    }
+  };
+
+  const onCloseArrowClick = () => {
+    replaceEditFormToPoint();
+    siteEditPointComponent.getElement().querySelector('.event__rollup-btn').removeEventListener('click', onCloseArrowClick);
+  };
+
   siteRoutePointComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
     replacePointToEditForm();
+    document.addEventListener('keydown', onEscKeyDown);
+    siteEditPointComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', onCloseArrowClick);
   });
 
   siteEditPointComponent.getElement().querySelector('form').addEventListener('submit', (evt) => {
     evt.preventDefault();
     replaceEditFormToPoint();
+    document.removeEventListener('keydown', onEscKeyDown);
+    siteEditPointComponent.getElement().querySelector('.event__rollup-btn').removeEventListener('click', onCloseArrowClick);
   });
 
   render(pointsListElement, siteRoutePointComponent.getElement(), RenderPosition.BEFOREEND);
 };
 
-render(siteHeaderElement, siteMainRouteComponent.getElement(), RenderPosition.AFTERBEGIN);
+const renderPointsRelatedData = (points) => {
+  if(points.length) {
+    render(siteHeaderElement, siteMainRouteComponent.getElement(), RenderPosition.AFTERBEGIN);
+    render(siteMainRouteComponent.getElement(), new RouteInfoView(points).getElement(), RenderPosition.BEFOREEND);
+    render(siteMainRouteComponent.getElement(), new TotalPriceView(points).getElement(), RenderPosition.BEFOREEND);
+    render(siteTripEventsElement, new TripSortView().getElement(), RenderPosition.AFTERBEGIN);
+    render(siteEventsListComponent.getElement(), new AddNewPointView(points[0]).getElement(), RenderPosition.BEFOREEND);
+
+    for (let i = 1; i < points.length; i++) {
+      renderPoint(siteEventsListComponent.getElement(), points[i]);
+    }
+  } else {
+    render(siteTripEventsElement, new NoPointsView(noPointsMessage).getElement(), RenderPosition.AFTERBEGIN);
+  }
+};
+
 render(siteTripEventsElement, siteEventsListComponent.getElement(), RenderPosition.BEFOREEND);
 render(siteNavigationElement, new MenuView().getElement(), RenderPosition.BEFOREEND);
 render(siteFiltersElement, new FiltersView().getElement(), RenderPosition.BEFOREEND);
-render(siteMainRouteComponent.getElement(), new RouteInfoView(mockedPoints).getElement(), RenderPosition.BEFOREEND);
-render(siteMainRouteComponent.getElement(), new TotalPriceView(mockedPoints).getElement(), RenderPosition.BEFOREEND);
-render(siteTripEventsElement, new TripSortView().getElement(), RenderPosition.AFTERBEGIN);
-render(siteEventsListComponent.getElement(), new AddNewPointView(mockedPoints[0]).getElement(), RenderPosition.BEFOREEND);
-
-for (let i = 1; i < POINTS_COUNT; i++) {
-  renderPoint(siteEventsListComponent.getElement(), mockedPoints[i]);
-}
+renderPointsRelatedData(mockedPoints);
