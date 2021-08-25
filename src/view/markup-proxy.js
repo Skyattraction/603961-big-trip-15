@@ -4,6 +4,7 @@ export {default  as EventsListView} from './events-list.js';
 export {default  as FiltersView} from './filters.js';
 export {default  as MainRouteView} from './main-route.js';
 export {default  as MenuView} from './menu.js';
+export {default  as NoPointsView} from './no-points.js';
 export {default  as RouteInfoView} from './route-info.js';
 export {default  as RoutePointView} from './route-point.js';
 export {default  as TotalPriceView} from './total-price.js';
