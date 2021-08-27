@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { generateCityList, generateEventTypeList, generateOfferList, generatePhotosList } from '../mock/route-mock';
-import {createElement} from '../utils.js';
+import AbstractView from './abstract.js';
 
 const createAddNewPointTemplate = (point) => {
   const {destination, offer} = point;
@@ -78,25 +78,13 @@ const createAddNewPointTemplate = (point) => {
   </li>`;
 };
 
-export default class AddNewPoint {
+export default class AddNewPoint extends AbstractView {
   constructor(point) {
+    super();
     this._point = point;
-    this._element = null;
   }
 
   getTemplate() {
     return createAddNewPointTemplate(this._point);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
