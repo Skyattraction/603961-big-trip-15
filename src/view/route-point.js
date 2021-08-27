@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
-import {generateDuration, createElement} from '../utils.js';
+import {generateDuration, generateFinalPrice} from '../utils/route-point.js';
+import AbstractView from './abstract.js';
 
 const createRoutePointTemplate = (point) => {
   const {dateFrom, dateTo, type, name, basePrice, offer, isFavorite} = point;
@@ -35,14 +36,6 @@ const createRoutePointTemplate = (point) => {
     return options;
   };
 
-  const generateFinalPrice = () => {
-    let price = basePrice;
-    for(let i = 0; i < offer.length; i++) {
-      price += offer[i].offers[0].price;
-    }
-    return price;
-  };
-
   return `<li class="trip-events__item">
     <div class="event">
       <time class="event__date" datetime="${dateLabel}">${date}</time>
@@ -59,7 +52,7 @@ const createRoutePointTemplate = (point) => {
         <p class="event__duration">${generateDuration(dateFrom, dateTo)}</p>
       </div>
       <p class="event__price">
-        &euro;&nbsp;<span class="event__price-value">${generateFinalPrice()}</span>
+        &euro;&nbsp;<span class="event__price-value">${generateFinalPrice(basePrice, offer)}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
@@ -79,25 +72,25 @@ const createRoutePointTemplate = (point) => {
 };
 
 
-export default class RoutePoint {
+export default class RoutePoint extends AbstractView {
   constructor(point) {
+    super();
     this._point = point;
-    this._element = null;
+
+    this._editClickHandler = this._editClickHandler.bind(this);
   }
 
   getTemplate() {
     return createRoutePointTemplate(this._point);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setEditClickHandler(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._editClickHandler);
   }
 }
