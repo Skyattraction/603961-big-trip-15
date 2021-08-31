@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import {nanoid} from 'nanoid';
 
 const MAX_DAY_GAP = 2;
 const MAX_TIME_GAP = 59;
@@ -147,6 +148,6 @@ export const generatePointInfo = () => ({
   basePrice: getRandomInteger(100, 1000),
   dateFrom: generateDate(),
   dateTo: generateDate(),
-  id: getRandomInteger(0, 1000),
+  id: nanoid(),
   isFavorite: Boolean(getRandomInteger(0, 1)),
 });
