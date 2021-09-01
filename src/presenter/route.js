@@ -9,8 +9,9 @@ import {
 } from '../view/markup-proxy.js';
 import PointPresenter from './point.js';
 import {render, RenderPosition} from '../utils/render.js';
+import {sortDate, sortDuration, sortPrice} from '../utils/route-point.js';
 import {updateItem} from '../utils/common.js';
-import {noPointsMessage} from '../utils/route-point.js';
+import {SortType, noPointsMessage} from '../const.js';
 
 export default class Route {
   constructor(routeContainer) {
@@ -23,13 +24,16 @@ export default class Route {
     this._noPointsMessage = noPointsMessage;
     this._tripEventsContainer = document.querySelector('.trip-events');
     this._pointPresenter = new Map();
+    this._currentSortType = SortType.DAY;
 
     this._handlePointChange = this._handlePointChange.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
+    this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
   }
 
   init(points) {
-    this._points = points.slice();
+    this._points = points.slice().sort(sortDate);
+    this._sourcedPoints = points.slice().sort(sortDate);
     render(this._tripEventsContainer, this._eventsListComponent, RenderPosition.BEFOREEND);
 
     this._renderRoute();
@@ -41,7 +45,37 @@ export default class Route {
 
   _handlePointChange(updatedPoint) {
     this._points = updateItem(this._points, updatedPoint);
+    this._sourcedPoints = updateItem(this._sourcedPoints, updatedPoint);
     this._pointPresenter.get(updatedPoint.id).init(updatedPoint);
+  }
+
+  _handleSortTypeChange(sortType) {
+    if (this._currentSortType === sortType) {
+      return;
+    }
+    this._sortPoints(sortType);
+    this._clearPointsList();
+    this._renderPointsList(this._points);
+  }
+
+  _sortPoints(sortType) {
+    switch (sortType) {
+      case SortType.TIME:
+        this._points.sort(sortDuration);
+        break;
+      case SortType.PRICE:
+        this._points.sort(sortPrice);
+        break;
+      default:
+        this._points = this._sourcedPoints.slice();
+    }
+
+    this._currentSortType = sortType;
+  }
+
+  _renderSort() {
+    render(this._tripEventsContainer, this._tripSortComponent, RenderPosition.AFTERBEGIN);
+    this._tripSortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
   }
 
   _renderPoint(point) {
@@ -74,8 +108,8 @@ export default class Route {
       render(this._routeContainer, this._mainRouteComponent, RenderPosition.AFTERBEGIN);
       render(this._mainRouteComponent, new RouteInfoView(this._points), RenderPosition.BEFOREEND);
       render(this._mainRouteComponent, new TotalPriceView(this._points), RenderPosition.BEFOREEND);
-      render(this._tripEventsContainer, this._tripSortComponent, RenderPosition.AFTERBEGIN);
 
+      this._renderSort();
       this._addNewPoint(this._points[0]);
       this._renderPointsList(this._points);
     } else {

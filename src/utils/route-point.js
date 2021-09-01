@@ -1,7 +1,5 @@
 import dayjs from 'dayjs';
 
-const noPointsMessage = 'Click New Event to create your first point';
-
 const generateDuration = (dateFrom, dateTo) => {
   const diff = dateTo.diff(dateFrom);
 
@@ -25,4 +23,50 @@ const generateFinalPrice = (basePrice, offer) => {
   return price;
 };
 
-export {generateDuration, generateFinalPrice, noPointsMessage};
+const getWeightForNull = (pointA, pointB) => {
+  if (pointA === null && pointB === null) {
+    return 0;
+  }
+
+  if (pointA === null) {
+    return 1;
+  }
+
+  if (pointB === null) {
+    return -1;
+  }
+
+  return null;
+};
+
+const sortDate = (pointA, pointB) => {
+  const weight = getWeightForNull(pointA.dateFrom, pointB.dateFrom);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+};
+
+const sortDuration = (pointA, pointB) => {
+  const weight = getWeightForNull(dayjs(pointA.dateTo.diff(pointA.dateFrom)), dayjs(pointB.dateTo.diff(pointB.dateFrom)));
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return dayjs(pointB.dateTo.diff(pointB.dateFrom)) - dayjs(pointA.dateTo.diff(pointA.dateFrom));
+};
+
+const sortPrice = (pointA, pointB) => {
+  const weight = getWeightForNull(pointA.basePrice, pointB.basePrice);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return generateFinalPrice(pointB.basePrice, pointB.offer) - generateFinalPrice(pointA.basePrice, pointA.offer);
+};
+
+export {generateDuration, generateFinalPrice, sortDate, sortDuration, sortPrice};
