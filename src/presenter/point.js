@@ -10,9 +10,10 @@ const Mode = {
 };
 
 export default class Point {
-  constructor(pointContainer, changeData, changeMode) {
+  constructor(pointContainer, changeData, removePoint, changeMode) {
     this._pointContainer = pointContainer;
     this._changeData = changeData;
+    this._removePoint = removePoint;
     this._changeMode = changeMode;
 
     this._routePointComponent = null;
@@ -23,6 +24,7 @@ export default class Point {
     this._handleCloseClick = this._handleCloseClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
+    this._handleFormReset = this._handleFormReset.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
@@ -32,13 +34,14 @@ export default class Point {
     const prevPointComponent = this._routePointComponent;
     const prevPointEditComponent = this._editPointComponent;
 
-    this._routePointComponent = new RoutePointView(point);
-    this._editPointComponent = new EditPointView(point);
+    this._routePointComponent = new RoutePointView(this._point);
+    this._editPointComponent = new EditPointView(this._point);
 
     this._routePointComponent.setEditClickHandler(this._handleEditClick);
     this._routePointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
     this._editPointComponent.setCloseClickHandler(this._handleCloseClick);
     this._editPointComponent.setFormSubmitHandler(this._handleFormSubmit);
+    this._editPointComponent.setDeleteClickHandler(this._handleFormReset);
 
     render(this._pointContainer, this._routePointComponent, RenderPosition.BEFOREEND);
 
@@ -86,6 +89,7 @@ export default class Point {
   _escKeyDownHandler(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      this._editPointComponent.reset();
       this._replaceEditFormToPoint();
     }
   }
@@ -96,6 +100,11 @@ export default class Point {
 
   _handleCloseClick() {
     this._replaceEditFormToPoint();
+  }
+
+  _handleFormReset() {
+    this.destroy();
+    this._removePoint(this._point);
   }
 
   _handleFavoriteClick() {
