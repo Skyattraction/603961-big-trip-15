@@ -120,6 +120,11 @@ export default class AddNewPoint extends SmartView {
     this._setDatepickerEnd();
   }
 
+  removeElement() {
+    super.removeElement();
+    this._resetDatepicker();
+  }
+
   restoreHandlers() {
     this._setInnerHandlers();
     this._setDatepickerStart();
@@ -134,6 +139,17 @@ export default class AddNewPoint extends SmartView {
 
   getTemplate() {
     return createAddNewPointTemplate(this._data);
+  }
+
+  _resetDatepicker() {
+    if (this._datepickerStart) {
+      this._datepickerStart.destroy();
+      this._datepickerStart = null;
+    }
+    if (this._datepickerEnd) {
+      this._datepickerEnd.destroy();
+      this._datepickerEnd = null;
+    }
   }
 
   _setDatepickerStart() {
