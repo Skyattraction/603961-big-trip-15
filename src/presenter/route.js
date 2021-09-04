@@ -108,7 +108,7 @@ export default class Route {
   }
 
   _renderPointsList(points) {
-    for (let i = 1; i < points.length; i++) {
+    for (let i = 0; i < points.length; i++) {
       this._renderPoint(points[i]);
     }
   }
