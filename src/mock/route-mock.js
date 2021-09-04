@@ -27,7 +27,7 @@ const generateMockName = () => {
   return cityNames[randomIndex];
 };
 
-const generateMockDescription = () => {
+export const generateMockDescription = () => {
   const randomPhraseNumber = getRandomInteger(1, 5);
   const descriptionsArray = [];
 
@@ -57,7 +57,7 @@ const generateMockOptions = () => {
   return options;
 };
 
-const generateMockOffer = () => {
+export const generateMockOffer = () => {
   const randomOffersNumber = getRandomInteger(0, 5);
   const offers = [];
 
@@ -71,7 +71,7 @@ const generateMockOffer = () => {
   return offers;
 };
 
-const generateMockPictures = () => {
+export const generateMockPictures = () => {
   const randomPicturesNumber = getRandomInteger(0, 3);
   const pictures = [];
 
@@ -93,12 +93,12 @@ const generateDate = () => {
   return dayjs().add(daysGap, 'day').add(hoursGap, 'hour').add(minutesGap, 'minute');
 };
 
-export const generateEventTypeList = () => {
+export const generateEventTypeList = (id, type) => {
   let typeList = '';
   for (const eventType in eventTypes) {
     typeList += `<div class="event__type-item">
-    <input id="event-type-${eventTypes[eventType]}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventTypes[eventType]}">
-    <label class="event__type-label  event__type-label--${eventTypes[eventType]}" for="event-type-${eventTypes[eventType]}-1">${eventTypes[eventType]}</label>
+    <input id="event-type-${eventTypes[eventType]}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventTypes[eventType]}" ${type === eventTypes[eventType]? 'checked' : ''}>
+    <label class="event__type-label  event__type-label--${eventTypes[eventType]}" for="event-type-${eventTypes[eventType]}-${id}">${eventTypes[eventType]}</label>
   </div>`;
   }
   return typeList;
@@ -135,6 +135,25 @@ export const generatePhotosList = (pictures) => {
     photosList += `<img class="event__photo" src="${pictures[i].src}" alt="${pictures[i].description}">`;
   }
   return photosList;
+};
+
+export const generateDestination = (destination) => {
+  let destinationTemplate = '';
+
+  if(destination.description || destination.pictures) {
+    destinationTemplate = `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+
+    ${destination.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
+    ${destination.pictures ?
+    `<div class="event__photos-container">
+      <div class="event__photos-tape">
+      ${generatePhotosList(destination.pictures)}
+      </div>
+    </div>` : ''}
+  </section>`;
+  }
+  return destinationTemplate;
 };
 
 export const generatePointInfo = () => ({

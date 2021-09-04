@@ -45,7 +45,6 @@ export default class TripSort extends AbstractView {
     if (evt.target.tagName !== 'INPUT') {
       return;
     }
-    //evt.preventDefault();
     this._callback.sortTypeChange(evt.target.dataset.sortType);
   }
 

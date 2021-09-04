@@ -2,6 +2,7 @@ import {
   AddNewPointView,
   EventsListView,
   MainRouteView,
+  NewEventButtonView,
   NoPointsView,
   RouteInfoView,
   TotalPriceView,
@@ -10,13 +11,14 @@ import {
 import PointPresenter from './point.js';
 import {render, RenderPosition} from '../utils/render.js';
 import {sortDate, sortDuration, sortPrice} from '../utils/route-point.js';
-import {updateItem} from '../utils/common.js';
+import {updateItem, removeItem} from '../utils/common.js';
 import {SortType, noPointsMessage} from '../const.js';
 
 export default class Route {
   constructor(routeContainer) {
     this._routeContainer = routeContainer;
     this._mainRouteComponent = new MainRouteView();
+    this._newEventButtonComponent = new NewEventButtonView();
     this._eventsListComponent = new EventsListView();
     this._routeInfoComponent = new RouteInfoView();
     this._tripSortComponent = new TripSortView();
@@ -25,10 +27,13 @@ export default class Route {
     this._tripEventsContainer = document.querySelector('.trip-events');
     this._pointPresenter = new Map();
     this._currentSortType = SortType.DAY;
+    this._showNewPointForm = false;
 
     this._handlePointChange = this._handlePointChange.bind(this);
+    this._handlePointRemove = this._handlePointRemove.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
+    this._handleNewEventButtonClick = this._handleNewEventButtonClick.bind(this);
   }
 
   init(points) {
@@ -49,6 +54,11 @@ export default class Route {
     this._pointPresenter.get(updatedPoint.id).init(updatedPoint);
   }
 
+  _handlePointRemove(removedPoint) {
+    this._points = removeItem(this._points, removedPoint);
+    this._sourcedPoints = removeItem(this._sourcedPoints, removedPoint);
+  }
+
   _handleSortTypeChange(sortType) {
     if (this._currentSortType === sortType) {
       return;
@@ -56,6 +66,14 @@ export default class Route {
     this._sortPoints(sortType);
     this._clearPointsList();
     this._renderPointsList(this._points);
+  }
+
+  _handleNewEventButtonClick(showNewPointForm) {
+    if(!showNewPointForm) {
+      showNewPointForm = true;
+      this._showNewPointForm = showNewPointForm;
+      this._addNewPoint(showNewPointForm);
+    }
   }
 
   _sortPoints(sortType) {
@@ -79,7 +97,7 @@ export default class Route {
   }
 
   _renderPoint(point) {
-    const pointPresenter = new PointPresenter(this._eventsListComponent, this._handlePointChange, this._handleModeChange);
+    const pointPresenter = new PointPresenter(this._eventsListComponent, this._handlePointChange, this._handlePointRemove, this._handleModeChange);
     pointPresenter.init(point);
     this._pointPresenter.set(point.id, pointPresenter);
   }
@@ -99,18 +117,25 @@ export default class Route {
     render(this._tripEventsContainer, new NoPointsView(message), RenderPosition.AFTERBEGIN);
   }
 
-  _addNewPoint(point) {
-    render(this._eventsListComponent, new AddNewPointView(point), RenderPosition.BEFOREEND);
+  _addNewPoint(showNewPointForm) {
+    if(showNewPointForm) {
+      render(this._eventsListComponent, new AddNewPointView(), RenderPosition.AFTERBEGIN);
+    }
+  }
+
+  _renderNewEventButton() {
+    render(this._routeContainer, this._newEventButtonComponent, RenderPosition.BEFOREEND);
+    this._newEventButtonComponent.setNewEventButtonClickHandler(this._handleNewEventButtonClick);
   }
 
   _renderRoute() {
     if(this._points.length) {
       render(this._routeContainer, this._mainRouteComponent, RenderPosition.AFTERBEGIN);
+      this._renderNewEventButton();
       render(this._mainRouteComponent, new RouteInfoView(this._points), RenderPosition.BEFOREEND);
       render(this._mainRouteComponent, new TotalPriceView(this._points), RenderPosition.BEFOREEND);
 
       this._renderSort();
-      this._addNewPoint(this._points[0]);
       this._renderPointsList(this._points);
     } else {
       this._renderNoPoints(this._noPointsMessage);
