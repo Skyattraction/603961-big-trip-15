@@ -9,9 +9,18 @@ import {
   generateMockDescription,
   generateMockPictures } from '../mock/route-mock';
 import SmartView from './smart.js';
+import flatpickr from 'flatpickr';
 
-const createAddNewPointTemplate = (point) => {
-  const {id, dateFrom, dateTo, type, name, basePrice, destination, offer} = point;
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
+const createAddNewPointTemplate = (data) => {
+  const {id, dateFrom, dateTo, type, name, basePrice, destination, offer, isDisabled} = data;
+  const dateFromTime = dateFrom !== null
+    ? dayjs(dateFrom).format('DD/MM/YY HH:mm')
+    : '';
+  const dateToTime = dateTo !== null
+    ? dayjs(dateTo).format('DD/MM/YY HH:mm')
+    : '';
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -43,10 +52,10 @@ const createAddNewPointTemplate = (point) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-${id}">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dateFrom}">
+          <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dateFromTime}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-${id}">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dateTo}">
+          <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dateToTime}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -57,7 +66,7 @@ const createAddNewPointTemplate = (point) => {
           <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${basePrice}">
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+        <button class="event__save-btn  btn  btn--blue" ${isDisabled ? 'disabled' : ''} type="submit">Save</button>
         <button class="event__reset-btn" type="reset">Cancel</button>
       </header>
       <section class="event__details">
@@ -66,7 +75,7 @@ const createAddNewPointTemplate = (point) => {
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
           <div class="event__available-offers">
-            ${generateOfferList(offer)}
+            ${generateOfferList(offer, id)}
           </div>
         </section>` : ''}
         ${generateDestination(destination)}
@@ -78,7 +87,7 @@ const createAddNewPointTemplate = (point) => {
 export default class AddNewPoint extends SmartView {
   constructor() {
     super();
-    this._point = {
+    this._initialData = {
       type: 'flight',
       name: '',
       offer: null,
@@ -92,33 +101,99 @@ export default class AddNewPoint extends SmartView {
       id: nanoid(),
       isFavorite: false,
     };
-    this._reservePoint = Object.assign({}, this._point);
+    this._data = AddNewPoint.parsePointToData(this._initialData);
+    this._reserveData = Object.assign({}, this._data);
+    this._datepickerStart = null;
+    this._datepickerEnd = null;
 
+    this._priceInputChangeHandler = this._priceInputChangeHandler.bind(this);
     this._destinationInputFocusHandler = this._destinationInputFocusHandler.bind(this);
     this._destinationInputBlurHandler = this._destinationInputBlurHandler.bind(this);
     this._typeInputSelectHandler = this._typeInputSelectHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._deleteClickHandler = this._deleteClickHandler.bind(this);
+    this._dateStartChangeHandler = this._dateStartChangeHandler.bind(this);
+    this._dateEndChangeHandler = this._dateEndChangeHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setDatepickerStart();
+    this._setDatepickerEnd();
+  }
+
+  removeElement() {
+    super.removeElement();
+    this._resetDatepicker();
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setDatepickerStart();
+    this._setDatepickerEnd();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setDeleteClickHandler(this._callback.formReset);
   }
 
   reset() {
-    this._point = this._reservePoint;
-    this.updateData(this._reservePoint);
+    this.updateData(this._reserveData);
   }
 
   getTemplate() {
-    return createAddNewPointTemplate(this._point);
+    return createAddNewPointTemplate(this._data);
+  }
+
+  _resetDatepicker() {
+    if (this._datepickerStart) {
+      this._datepickerStart.destroy();
+      this._datepickerStart = null;
+    }
+    if (this._datepickerEnd) {
+      this._datepickerEnd.destroy();
+      this._datepickerEnd = null;
+    }
+  }
+
+  _setDatepickerStart() {
+    if (this._datepickerStart) {
+      this._datepickerStart.destroy();
+      this._datepickerStart = null;
+    }
+
+    this._datepickerStart = flatpickr(
+      this.getElement().querySelector('input[name=event-start-time]'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._data.dateFrom,
+        maxDate: this._data.dateTo,
+        enableTime: true,
+        'time_24hr': true,
+        onChange: this._dateStartChangeHandler,
+      },
+    );
+  }
+
+  _setDatepickerEnd() {
+    if (this._datepickerEnd) {
+      this._datepickerEnd.destroy();
+      this._datepickerEnd = null;
+    }
+
+    this._datepickerEnd = flatpickr(
+      this.getElement().querySelector('input[name=event-end-time]'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._data.dateTo,
+        minDate: this._data.dateFrom,
+        enableTime: true,
+        'time_24hr': true,
+        onChange: this._dateEndChangeHandler,
+      },
+    );
   }
 
   _setInnerHandlers() {
+    this.getElement()
+      .querySelector('.event__input--price')
+      .addEventListener('change', this._priceInputChangeHandler);
     this.getElement()
       .querySelector('.event__input--destination')
       .addEventListener('focus', this._destinationInputFocusHandler);
@@ -130,42 +205,69 @@ export default class AddNewPoint extends SmartView {
       .addEventListener('click', this._typeInputSelectHandler);
   }
 
+  _dateStartChangeHandler([userDate]) {
+    this.updateData({
+      dateFrom: userDate,
+    }), true;
+  }
+
+  _dateEndChangeHandler([userDate]) {
+    this.updateData({
+      dateTo: userDate,
+    }), true;
+  }
+
+  _priceInputChangeHandler(evt) {
+    if(evt.target.value !== this._data.basePrice) {
+      this.updateData({
+        basePrice: evt.target.value,
+      }, true);
+    }
+
+    if(evt.target.value === '') {
+      this.updateData({
+        isDisabled: true,
+      });
+      return;
+    }
+    this.updateData({
+      isDisabled: this._data.name === '',
+    });
+  }
+
   _destinationInputFocusHandler(evt) {
     evt.target.value = '';
   }
 
   _destinationInputBlurHandler(evt) {
     if(evt.target.value) {
-      this._point.name = evt.target.value;
-      this._point.destination.description = generateMockDescription();
-      this._point.destination.pictures = generateMockPictures();
+      this.updateData({
+        name: evt.target.value,
+        destination: {
+          description: generateMockDescription(),
+          pictures: generateMockPictures(),
+        },
+        isDisabled: this._data.basePrice === '',
+      });
+      return;
     }
-
-    this.updateData({
-      name: this._point.name,
-      destination: {
-        description: this._point.destination.description,
-        pictures: this._point.destination.pictures,
-      },
-    });
+    evt.target.value = this._data.name;
   }
 
   _typeInputSelectHandler(evt) {
     if (evt.target.tagName !== 'LABEL') {
       return;
     }
-    this._point.type = evt.target.textContent;
-    this._point.offer = generateMockOffer();
 
     this.updateData({
-      type: this._point.type,
-      offer: this._point.offer,
+      type: evt.target.textContent,
+      offer: generateMockOffer(),
     });
   }
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._point);
+    this._callback.formSubmit(AddNewPoint.parseDataToPoint(this._data));
   }
 
   _deleteClickHandler(evt) {
@@ -181,5 +283,19 @@ export default class AddNewPoint extends SmartView {
   setDeleteClickHandler(callback) {
     this._callback.formReset = callback;
     this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._deleteClickHandler);
+  }
+
+  static parsePointToData(point) {
+    return Object.assign(
+      {},
+      point,
+      {isDisabled: point.name === '' || point.basePrice === ''},
+    );
+  }
+
+  static parseDataToPoint(data) {
+    data = Object.assign({}, data);
+    delete data.isDisabled;
+    return data;
   }
 }

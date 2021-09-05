@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 const generateDuration = (dateFrom, dateTo) => {
-  const diff = dateTo.diff(dateFrom);
+  const diff = dayjs(dateTo).diff(dayjs(dateFrom));
 
   switch (true) {
     case (diff <= 59) :
@@ -50,13 +50,13 @@ const sortDate = (pointA, pointB) => {
 };
 
 const sortDuration = (pointA, pointB) => {
-  const weight = getWeightForNull(dayjs(pointA.dateTo.diff(pointA.dateFrom)), dayjs(pointB.dateTo.diff(pointB.dateFrom)));
+  const weight = getWeightForNull(dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom)), dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom)));
 
   if (weight !== null) {
     return weight;
   }
 
-  return dayjs(pointB.dateTo.diff(pointB.dateFrom)) - dayjs(pointA.dateTo.diff(pointA.dateFrom));
+  return dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom)) - dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom));
 };
 
 const sortPrice = (pointA, pointB) => {

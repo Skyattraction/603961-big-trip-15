@@ -90,7 +90,7 @@ const generateDate = () => {
   const hoursGap = getRandomInteger(0, MAX_TIME_GAP);
   const minutesGap = getRandomInteger(0, MAX_TIME_GAP);
 
-  return dayjs().add(daysGap, 'day').add(hoursGap, 'hour').add(minutesGap, 'minute');
+  return dayjs().add(daysGap, 'day').add(hoursGap, 'hour').add(minutesGap, 'minute').toDate();
 };
 
 export const generateEventTypeList = (id, type) => {
@@ -112,13 +112,13 @@ export const generateCityList = () => {
   return cityList;
 };
 
-export const generateOfferList = (offer) => {
+export const generateOfferList = (offer, id) => {
   let offerList = '';
 
   for(let i = 0; i < offer.length; i++) {
     const optionItem = `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer[i].type}-1" type="checkbox" name="event-offer-${offer[i].type}">
-    <label class="event__offer-label" for="event-offer-${offer[i].type}-1">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer[i].type}-${id}" type="checkbox" name="event-offer-${offer[i].type}">
+    <label class="event__offer-label" for="event-offer-${offer[i].type}-${id}">
       <span class="event__offer-title">${offer[i].offers[0].title}</span>
       &plus;&euro;&nbsp;
       <span class="event__offer-price">${offer[i].offers[0].price}</span>
