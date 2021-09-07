@@ -69,4 +69,8 @@ const sortPrice = (pointA, pointB) => {
   return generateFinalPrice(pointB.basePrice, pointB.offer) - generateFinalPrice(pointA.basePrice, pointA.offer);
 };
 
-export {generateDuration, generateFinalPrice, sortDate, sortDuration, sortPrice};
+const isPointInPast = (date) => date === null ? false : dayjs().isAfter(dayjs(date), 'hour');
+
+const isPointInFuture = (date) => date === null ? false : dayjs().isBefore(dayjs(date), 'hour');
+
+export {generateDuration, generateFinalPrice, sortDate, sortDuration, sortPrice, isPointInPast, isPointInFuture};

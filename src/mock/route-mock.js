@@ -168,5 +168,5 @@ export const generatePointInfo = () => ({
   dateFrom: generateDate(),
   dateTo: generateDate(),
   id: nanoid(),
-  isFavorite: Boolean(getRandomInteger(0, 1)),
+  isFavorite: false,
 });
