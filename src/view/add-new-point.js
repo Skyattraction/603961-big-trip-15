@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import he from 'he';
+import flatpickr from 'flatpickr';
 import { nanoid } from 'nanoid';
 import {
   generateCityList,
@@ -8,8 +10,8 @@ import {
   generateMockOffer,
   generateMockDescription,
   generateMockPictures } from '../mock/route-mock';
+import {cityList} from '../utils/common.js';
 import SmartView from './smart.js';
-import flatpickr from 'flatpickr';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
@@ -90,7 +92,7 @@ export default class AddNewPoint extends SmartView {
     this._initialData = {
       type: 'flight',
       name: '',
-      offer: null,
+      offer: [],
       destination: {
         description: null,
         pictures: null,
@@ -107,6 +109,7 @@ export default class AddNewPoint extends SmartView {
     this._datepickerEnd = null;
 
     this._priceInputChangeHandler = this._priceInputChangeHandler.bind(this);
+    this._priceInputValidationHandler = this._priceInputValidationHandler.bind(this);
     this._destinationInputFocusHandler = this._destinationInputFocusHandler.bind(this);
     this._destinationInputBlurHandler = this._destinationInputBlurHandler.bind(this);
     this._typeInputSelectHandler = this._typeInputSelectHandler.bind(this);
@@ -152,6 +155,7 @@ export default class AddNewPoint extends SmartView {
     }
   }
 
+  //надо поправить баги форматов датапикера
   _setDatepickerStart() {
     if (this._datepickerStart) {
       this._datepickerStart.destroy();
@@ -195,6 +199,9 @@ export default class AddNewPoint extends SmartView {
       .querySelector('.event__input--price')
       .addEventListener('change', this._priceInputChangeHandler);
     this.getElement()
+      .querySelector('.event__input--price')
+      .addEventListener('input', this._priceInputValidationHandler);
+    this.getElement()
       .querySelector('.event__input--destination')
       .addEventListener('focus', this._destinationInputFocusHandler);
     this.getElement()
@@ -220,7 +227,7 @@ export default class AddNewPoint extends SmartView {
   _priceInputChangeHandler(evt) {
     if(evt.target.value !== this._data.basePrice) {
       this.updateData({
-        basePrice: evt.target.value,
+        basePrice: Number(evt.target.value),
       }, true);
     }
 
@@ -235,23 +242,43 @@ export default class AddNewPoint extends SmartView {
     });
   }
 
+  _priceInputValidationHandler(evt) {
+    const numbers = /^\d+$/;
+    if((((evt.target.value).match(numbers) !== null) && (evt.target.value > 0)) || evt.target.value === '') {
+      evt.target.setCustomValidity('');
+    } else {
+      evt.target.setCustomValidity('Only numbers allowed');
+      evt.target.value = this._data.basePrice;
+    }
+
+    evt.target.reportValidity();
+  }
+
   _destinationInputFocusHandler(evt) {
     evt.target.value = '';
   }
 
   _destinationInputBlurHandler(evt) {
     if(evt.target.value) {
-      this.updateData({
-        name: evt.target.value,
-        destination: {
-          description: generateMockDescription(),
-          pictures: generateMockPictures(),
-        },
-        isDisabled: this._data.basePrice === '',
-      });
-      return;
+      if(cityList().includes(he.encode(evt.target.value))) {
+        evt.target.setCustomValidity('');
+        this.updateData({
+          name: evt.target.value,
+          destination: {
+            description: generateMockDescription(),
+            pictures: generateMockPictures(),
+          },
+          isDisabled: this._data.basePrice === '',
+        });
+      } else {
+        evt.target.setCustomValidity('Please select city from the list');
+      }
+    } else {
+      evt.target.setCustomValidity('');
+      evt.target.value = this._data.name;
     }
-    evt.target.value = this._data.name;
+
+    evt.target.reportValidity();
   }
 
   _typeInputSelectHandler(evt) {

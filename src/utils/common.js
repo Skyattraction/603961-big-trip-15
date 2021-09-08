@@ -1,22 +1,11 @@
-export const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
+import {mockedPoints} from '../main.js';
 
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
-};
-
-export const removeItem = (items, remove) => {
-  const index = items.findIndex((item) => item.id === remove.id);
-
-  if (index > -1) {
-    items.splice(index, 1);
-  }
-  return items;
+//regenerating for future server data:
+export const cityList = () => {
+  const list = [];
+  mockedPoints.forEach((point) => {
+    list.push(point.name);
+  });
+  const resultedList = [... new Set(list)];
+  return resultedList;
 };

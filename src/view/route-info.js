@@ -3,10 +3,15 @@ import AbstractView from './abstract.js';
 
 const createRouteInfoTemplate = (points) => {
   const generateTitle = () => {
+    const routePoints = points.slice();
     let title = '';
-    for (let i = 0; i < points.length; i++) {
-      title += points[i].name;
-      if(i < points.length - 1){
+    if (routePoints.length > 3) {
+      routePoints.splice(1, points.length - 2);
+      routePoints.splice(1, 0 , {name: '...'});
+    }
+    for (let i = 0; i < routePoints.length; i++) {
+      title += routePoints[i].name;
+      if(i < routePoints.length - 1){
         title += ' &mdash; ';
       }
     }

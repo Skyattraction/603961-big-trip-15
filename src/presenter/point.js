@@ -3,6 +3,7 @@ import {
   RoutePointView
 } from '../view/markup-proxy.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
+import {UserAction, UpdateType} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -10,10 +11,9 @@ const Mode = {
 };
 
 export default class Point {
-  constructor(pointContainer, changeData, removePoint, changeMode) {
+  constructor(pointContainer, changeData, changeMode) {
     this._pointContainer = pointContainer;
     this._changeData = changeData;
-    this._removePoint = removePoint;
     this._changeMode = changeMode;
 
     this._routePointComponent = null;
@@ -23,8 +23,8 @@ export default class Point {
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleCloseClick = this._handleCloseClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
-    this._handleFormReset = this._handleFormReset.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
@@ -41,7 +41,7 @@ export default class Point {
     this._routePointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
     this._editPointComponent.setCloseClickHandler(this._handleCloseClick);
     this._editPointComponent.setFormSubmitHandler(this._handleFormSubmit);
-    this._editPointComponent.setDeleteClickHandler(this._handleFormReset);
+    this._editPointComponent.setDeleteClickHandler(this._handleDeleteClick);
 
     render(this._pointContainer, this._routePointComponent, RenderPosition.BEFOREEND);
 
@@ -102,13 +102,18 @@ export default class Point {
     this._replaceEditFormToPoint();
   }
 
-  _handleFormReset() {
-    this.destroy();
-    this._removePoint(this._point);
+  _handleDeleteClick(point) {
+    this._changeData(
+      UserAction.DELETE_TASK,
+      UpdateType.MAJOR,
+      point,
+    );
   }
 
   _handleFavoriteClick() {
     this._changeData(
+      UserAction.UPDATE_TASK,
+      UpdateType.MINOR,
       Object.assign(
         {},
         this._point,
@@ -119,8 +124,20 @@ export default class Point {
     );
   }
 
-  _handleFormSubmit(point) {
-    this._changeData(point);
+  _handleFormSubmit(update) {
+    const incomingUpdate = JSON.parse(JSON.stringify(update));
+    const currentPoint = JSON.parse(JSON.stringify(this._point));
+    delete incomingUpdate.type;
+    delete currentPoint.type;
+    delete incomingUpdate.offer;
+    delete currentPoint.offer;
+
+    const isMinorUpdate = (JSON.stringify(incomingUpdate) === JSON.stringify(currentPoint));
+    this._changeData(
+      UserAction.UPDATE_TASK,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.MAJOR,
+      update,
+    );
     this._replaceEditFormToPoint();
   }
 }
