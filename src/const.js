@@ -1,3 +1,5 @@
+const BAR_HEIGHT = 55;
+
 const UserAction = {
   UPDATE_TASK: 'UPDATE_TASK',
   ADD_TASK: 'ADD_TASK',
@@ -22,10 +24,16 @@ const FilterType = {
   PAST: 'past',
 };
 
-const noPointsMessage = {
+const NoPointsMessage = {
   [FilterType.EVERYTHING]: 'Click New Event to create your first point',
   [FilterType.FUTURE]: 'There are no future events now',
   [FilterType.PAST]: 'There are no past events now',
 };
 
-export {UserAction, UpdateType, SortType, FilterType, noPointsMessage};
+const MenuItem = {
+  ADD_NEW_EVENT: 'ADD_NEW_EVENT',
+  TABLE: 'TABLE',
+  STATS: 'STATS',
+};
+
+export {BAR_HEIGHT, UserAction, UpdateType, SortType, FilterType, NoPointsMessage, MenuItem};

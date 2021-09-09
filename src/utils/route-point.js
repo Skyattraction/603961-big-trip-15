@@ -4,7 +4,7 @@ const generateDuration = (dateFrom, dateTo) => {
   const diff = dayjs(dateTo).diff(dayjs(dateFrom));
 
   switch (true) {
-    case (diff <= 59) :
+    case (diff < 0) :
       return 'Date Error';
     case (diff / 60000 / 60) < 1:
       return dayjs(diff).format('mm[M]');

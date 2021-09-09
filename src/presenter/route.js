@@ -1,7 +1,6 @@
 import {
   EventsListView,
   MainRouteView,
-  NewEventButtonView,
   NoPointsView,
   RouteInfoView,
   TotalPriceView,
@@ -21,7 +20,6 @@ export default class Route {
     this._filterModel = filterModel;
 
     this._mainRouteComponent = new MainRouteView();
-    this._newEventButtonComponent = new NewEventButtonView();
     this._eventsListComponent = new EventsListView();
 
     this._tripSortComponent = null;
@@ -35,18 +33,24 @@ export default class Route {
     this._handleModelEvent = this._handleModelEvent.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
-    this._handleNewEventButtonClick = this._handleNewEventButtonClick.bind(this);
-
-    this._routeModel.addObserver(this._handleModelEvent);
-    this._filterModel.addObserver(this._handleModelEvent);
 
     this._pointNewPresenter = new PointNewPresenter(this._eventsListComponent, this._handleViewAction);
   }
 
-  init() {
+  init(update) {
     render(this._tripEventsContainer, this._eventsListComponent, RenderPosition.BEFOREEND);
+    this._routeModel.addObserver(this._handleModelEvent);
+    this._filterModel.addObserver(this._handleModelEvent);
+    this._renderRoute(update);
+  }
 
-    this._renderRoute();
+  destroy() {
+    this._clearRoute({resetSortType: true});
+
+    remove(this._eventsListComponent);
+
+    this._routeModel.removeObserver(this._handleModelEvent);
+    this._filterModel.removeObserver(this._handleModelEvent);
   }
 
   _getPoints() {
@@ -88,11 +92,11 @@ export default class Route {
         this._pointPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
-        this._clearRoute();
+        this._clearRoute({resetHeader: true});
         this._renderRoute();
         break;
       case UpdateType.MAJOR:
-        this._clearRoute({resetSortType: true});
+        this._clearRoute({resetSortType: true, resetHeader: true});
         this._renderRoute();
         break;
     }
@@ -107,10 +111,10 @@ export default class Route {
     this._renderRoute();
   }
 
-  _handleNewEventButtonClick() {
+  createNewPoint(callback) {
     this._currentSortType = SortType.DAY;
     this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this._pointNewPresenter.init();
+    this._pointNewPresenter.init(callback);
   }
 
   _renderSort() {
@@ -138,17 +142,15 @@ export default class Route {
     render(this._tripEventsContainer, this._noPointsComponent, RenderPosition.AFTERBEGIN);
   }
 
-  _renderNewEventButton() {
-    render(this._routeContainer, this._newEventButtonComponent, RenderPosition.BEFOREEND);
-    this._newEventButtonComponent.setNewEventButtonClickHandler(this._handleNewEventButtonClick);
-  }
-
-  _clearRoute({resetSortType = false} = {}) {
+  _clearRoute({resetSortType = false, resetHeader = false} = {}) {
     this._pointNewPresenter.destroy();
     this._pointPresenter.forEach((presenter) => presenter.destroy());
     this._pointPresenter.clear();
+
     remove(this._tripSortComponent);
-    remove(this._mainRouteComponent);
+    if (resetHeader) {
+      remove(this._mainRouteComponent);
+    }
     if (this._noPointsComponent) {
       remove(this._noPointsComponent);
     }
@@ -158,14 +160,14 @@ export default class Route {
     }
   }
 
-  _renderRoute() {
+  _renderRoute(isHeaderUpdated) {
     const routePoints = this._getPoints();
     if(routePoints.length) {
       render(this._routeContainer, this._mainRouteComponent, RenderPosition.AFTERBEGIN);
-      this._renderNewEventButton();
-      render(this._mainRouteComponent, new RouteInfoView(routePoints), RenderPosition.BEFOREEND);
-      render(this._mainRouteComponent, new TotalPriceView(routePoints), RenderPosition.BEFOREEND);
-
+      if(!isHeaderUpdated) {
+        render(this._mainRouteComponent, new RouteInfoView(routePoints), RenderPosition.BEFOREEND);
+        render(this._mainRouteComponent, new TotalPriceView(routePoints), RenderPosition.BEFOREEND);
+      }
       this._renderSort();
       this._renderPointsList(routePoints);
     } else {

@@ -9,13 +9,15 @@ export default class PointNew {
     this._changeData = changeData;
 
     this._pointAddComponent = null;
+    this._destroyCallback = null;
 
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._handleDeleteClick = this._handleDeleteClick.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
-  init() {
+  init(callback) {
+    this._destroyCallback = callback;
     if (this._pointAddComponent !== null) {
       return;
     }
@@ -33,7 +35,9 @@ export default class PointNew {
     if (this._pointAddComponent === null) {
       return;
     }
-
+    if (this._destroyCallback !== null) {
+      this._destroyCallback();
+    }
     remove(this._pointAddComponent);
     this._pointAddComponent = null;
 
@@ -48,7 +52,6 @@ export default class PointNew {
       // выдывал честный id задачи, нам нужно позаботиться об этом самим
       Object.assign({id: nanoid()}, point),
     );
-    this.destroy();
   }
 
   _handleDeleteClick() {
