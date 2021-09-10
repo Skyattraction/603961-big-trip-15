@@ -5,10 +5,9 @@ const createTotalPriceTemplate = (points) => {
     let price = 0;
     for (const point of points) {
       price += point.basePrice;
-      const offer = point.offer;
-      for(let i = 0; i < offer.length; i++) {
-        price += offer[i].offers[0].price;
-      }
+      (point.selectedOffers).forEach((offer) => {
+        price += Number(offer.price);
+      });
     }
     return price;
   };

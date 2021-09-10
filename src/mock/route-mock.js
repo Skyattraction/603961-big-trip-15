@@ -112,12 +112,24 @@ export const generateCityList = () => {
   return cityList;
 };
 
-export const generateOfferList = (offer, id) => {
+export const generateOfferList = (point) => {
   let offerList = '';
 
+  const offer = point.offer;
+  const id = point.id;
+
   for(let i = 0; i < offer.length; i++) {
+    const selected = ((point.selectedOffers).filter((currentOffer) => currentOffer.title === offer[i].offers[0].title));
+
     const optionItem = `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer[i].type}-${id}" type="checkbox" name="event-offer-${offer[i].type}">
+    <input
+      class="event__offer-checkbox  visually-hidden"
+      id="event-offer-${offer[i].type}-${id}"
+      type="checkbox"
+      name="event-offer-${offer[i].type}-${id}"
+      data-title="${offer[i].offers[0].title}"
+      data-price="${offer[i].offers[0].price}"
+      ${selected.length > 0 ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${offer[i].type}-${id}">
       <span class="event__offer-title">${offer[i].offers[0].title}</span>
       &plus;&euro;&nbsp;
@@ -169,4 +181,5 @@ export const generatePointInfo = () => ({
   dateTo: generateDate(),
   id: nanoid(),
   isFavorite: false,
+  selectedOffers: [],
 });

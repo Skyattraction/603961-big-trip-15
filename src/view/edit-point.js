@@ -80,7 +80,7 @@ const createEditPointTemplate = (data) => {
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${generateOfferList(offer, id)}
+        ${generateOfferList(data)}
       </div>
     </section>` : ''}
     ${generateDestination(destination)}
@@ -102,6 +102,7 @@ export default class EditPoint extends SmartView {
     this._destinationInputFocusHandler = this._destinationInputFocusHandler.bind(this);
     this._destinationInputBlurHandler = this._destinationInputBlurHandler.bind(this);
     this._typeInputSelectHandler = this._typeInputSelectHandler.bind(this);
+    this._offersClickHandler = this._offersClickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._deleteClickHandler = this._deleteClickHandler.bind(this);
     this._closeClickHandler = this._closeClickHandler.bind(this);
@@ -200,6 +201,11 @@ export default class EditPoint extends SmartView {
     this.getElement()
       .querySelector('.event__type-group')
       .addEventListener('click', this._typeInputSelectHandler);
+    const offersClickHandler = this._offersClickHandler;
+    this.getElement()
+      .querySelectorAll('.event__offer-checkbox')
+      .forEach((item) => {item.addEventListener('click', offersClickHandler);
+      });
   }
 
   _dateStartChangeHandler([userDate]) {
@@ -278,6 +284,22 @@ export default class EditPoint extends SmartView {
     this.updateData({
       type: evt.target.textContent,
       offer: generateMockOffer(),
+    });
+  }
+
+  _offersClickHandler(evt) {
+    const filteredOffer = (this._data.selectedOffers).filter((currentOffer) => currentOffer.title === evt.target.dataset.title);
+    if(filteredOffer.length > 0) {
+      const index = (this._data.selectedOffers).map((e) => e.title).indexOf(evt.target.dataset.title);
+      (this._data.selectedOffers).splice(index, 1);
+    } else {
+      const selectedOffer = new Object();
+      selectedOffer.title = evt.target.dataset.title;
+      selectedOffer.price = evt.target.dataset.price;
+      (this._data.selectedOffers).push(selectedOffer);
+    }
+    this.updateData({
+      selectedOffers: this._data.selectedOffers,
     });
   }
 

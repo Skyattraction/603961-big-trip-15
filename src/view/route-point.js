@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
-import {generateDuration, generateFinalPrice} from '../utils/route-point.js';
+import {generateDuration} from '../utils/route-point.js';
 import AbstractView from './abstract.js';
 
 const createRoutePointTemplate = (point) => {
-  const {dateFrom, dateTo, type, name, basePrice, offer, isFavorite} = point;
+  const {dateFrom, dateTo, type, name, basePrice, selectedOffers, isFavorite} = point;
   const dateLabel = dateFrom !== null
     ? dayjs(dateFrom).format('YYYY-MM-DD')
     : '';
@@ -25,14 +25,14 @@ const createRoutePointTemplate = (point) => {
 
   const generateOptions = () => {
     let options = '';
-    for(let i = 0; i < offer.length; i++) {
+    selectedOffers.forEach((item) => {
       const optionItem = `<li class="event__offer">
-        <span class="event__offer-title">${offer[i].offers[0].title}</span>
+        <span class="event__offer-title">${item.title}</span>
         &plus;&euro;&nbsp;
-        <span class="event__offer-price">${offer[i].offers[0].price}</span>
+        <span class="event__offer-price">${item.price}</span>
       </li>`;
       options = options + optionItem;
-    }
+    });
     return options;
   };
 
@@ -52,7 +52,7 @@ const createRoutePointTemplate = (point) => {
         <p class="event__duration">${generateDuration(dateFrom, dateTo)}</p>
       </div>
       <p class="event__price">
-        &euro;&nbsp;<span class="event__price-value">${generateFinalPrice(basePrice, offer)}</span>
+        &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">

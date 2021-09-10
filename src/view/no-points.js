@@ -1,8 +1,8 @@
 import AbstractView from './abstract.js';
-import {noPointsMessage} from '../const.js';
+import {NoPointsMessage} from '../const.js';
 
 const createNoPointsTemplate = (filterType) => {
-  const noPointsMessageValue = noPointsMessage[filterType];
+  const noPointsMessageValue = NoPointsMessage[filterType];
   return (
     `<p class="trip-events__msg">${noPointsMessageValue}</p>`
   );
