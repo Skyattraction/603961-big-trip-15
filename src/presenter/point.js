@@ -24,24 +24,28 @@ export default class Point {
     this._handleCloseClick = this._handleCloseClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleDeleteClick = this._handleDeleteClick.bind(this);
+    this._handleOfferClick = this._handleOfferClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
-  init(point) {
+  init(point, offers, destinations) {
     this._point = point;
+    this._offers = offers;
+    this._destinations = destinations;
 
     const prevPointComponent = this._routePointComponent;
     const prevPointEditComponent = this._editPointComponent;
 
     this._routePointComponent = new RoutePointView(this._point);
-    this._editPointComponent = new EditPointView(this._point);
+    this._editPointComponent = new EditPointView(this._point, this._offers, this._destinations);
 
     this._routePointComponent.setEditClickHandler(this._handleEditClick);
     this._routePointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
     this._editPointComponent.setCloseClickHandler(this._handleCloseClick);
     this._editPointComponent.setFormSubmitHandler(this._handleFormSubmit);
     this._editPointComponent.setDeleteClickHandler(this._handleDeleteClick);
+    this._editPointComponent.setOfferUpdateClickHandler(this._handleOfferClick);
 
     render(this._pointContainer, this._routePointComponent, RenderPosition.BEFOREEND);
 
@@ -104,15 +108,23 @@ export default class Point {
 
   _handleDeleteClick(point) {
     this._changeData(
-      UserAction.DELETE_TASK,
+      UserAction.DELETE_POINT,
       UpdateType.MAJOR,
+      point,
+    );
+  }
+
+  _handleOfferClick(point) {
+    this._changeData(
+      UserAction.UPDATE_VIEW,
+      UpdateType.PATCH,
       point,
     );
   }
 
   _handleFavoriteClick() {
     this._changeData(
-      UserAction.UPDATE_TASK,
+      UserAction.UPDATE_POINT,
       UpdateType.MINOR,
       Object.assign(
         {},
@@ -129,12 +141,12 @@ export default class Point {
     const currentPoint = JSON.parse(JSON.stringify(this._point));
     delete incomingUpdate.type;
     delete currentPoint.type;
-    delete incomingUpdate.offer;
-    delete currentPoint.offer;
+    delete incomingUpdate.offers;
+    delete currentPoint.offers;
 
     const isMinorUpdate = (JSON.stringify(incomingUpdate) === JSON.stringify(currentPoint));
     this._changeData(
-      UserAction.UPDATE_TASK,
+      UserAction.UPDATE_POINT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.MAJOR,
       update,
     );
