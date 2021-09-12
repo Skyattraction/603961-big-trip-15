@@ -1,4 +1,5 @@
 const BAR_HEIGHT = 55;
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
 const UserAction = {
   UPDATE_VIEW: 'UPDATE_VIEW',
@@ -38,4 +39,15 @@ const MenuItem = {
   STATS: 'STATS',
 };
 
-export {BAR_HEIGHT, UserAction, UpdateType, SortType, FilterType, NoPointsMessage, MenuItem};
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
+const State = {
+  SAVING: 'SAVING',
+  DELETING: 'DELETING',
+  ABORTING: 'ABORTING',
+};
+
+export {BAR_HEIGHT, SHAKE_ANIMATION_TIMEOUT, UserAction, UpdateType, SortType, FilterType, NoPointsMessage, MenuItem, Mode, State};

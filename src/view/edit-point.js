@@ -16,7 +16,19 @@ import SmartView from './smart.js';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const createEditPointTemplate = (data, initialOffers, destinations) => {
-  const {id, dateFrom, dateTo, type, name, basePrice, offers, isDisabled} = data;
+  const {
+    id,
+    dateFrom,
+    dateTo,
+    type,
+    name,
+    basePrice,
+    offers,
+    isDisabled,
+    isDisabledByLoad,
+    isSaving,
+    isDeleting,
+  } = data;
   const dateFromTime = dateFrom !== null
     ? dayjs(dateFrom).format('DD/MM/YY HH:mm')
     : '';
@@ -32,7 +44,7 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
             <span class="visually-hidden">Choose event type</span>
             <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
+          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox" ${isDisabledByLoad ? 'disabled' : ''}>
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
@@ -46,7 +58,15 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
           <label class="event__label  event__type-output" for="event-destination-${id}">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${name}" list="destination-list-${id}">
+          <input
+            class="event__input  event__input--destination"
+            id="event-destination-${id}"
+            type="text"
+            name="event-destination"
+            value="${name}"
+            list="destination-list-${id}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
+
           <datalist id="destination-list-${id}">
           ${generateCityList(destinations)}
           </datalist>
@@ -54,10 +74,22 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-${id}">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dateFromTime}">
+          <input
+            class="event__input  event__input--time"
+            id="event-start-time-${id}"
+            type="text"
+            name="event-start-time"
+            value="${dateFromTime}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
           &mdash;
           <label class="visually-hidden" for="event-end-time-${id}">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dateToTime}">
+          <input
+            class="event__input  event__input--time"
+            id="event-end-time-${id}"
+            type="text"
+            name="event-end-time"
+            value="${dateToTime}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -65,11 +97,20 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${basePrice}">
+          <input
+            class="event__input  event__input--price"
+            id="event-price-${id}"
+            type="text" name="event-price"
+            value="${basePrice}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" ${isDisabled ? 'disabled' : ''} type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
+        <button class="event__save-btn  btn  btn--blue" ${isDisabled || isDisabledByLoad ? 'disabled' : ''} type="submit">
+          ${isSaving ? 'Saving...' : 'Save'}
+        </button>
+        <button class="event__reset-btn" type="reset" ${isDisabledByLoad ? 'disabled' : ''}>
+          ${isDeleting ? 'deleting...' : 'Delete'}
+        </button>
         <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
         </button>
@@ -346,13 +387,21 @@ export default class EditPoint extends SmartView {
     return Object.assign(
       {},
       point,
-      {isDisabled: point.name === '' || point.basePrice === ''},
+      {
+        isDisabled: point.name === '' || point.basePrice === '',
+        isDisabledByLoad: false,
+        isSaving: false,
+        isDeleting: false,
+      },
     );
   }
 
   static parseDataToPoint(data) {
     data = Object.assign({}, data);
     delete data.isDisabled;
+    delete data.isDisabledByLoad;
+    delete data.isSaving;
+    delete data.isDeleting;
     return data;
   }
 }

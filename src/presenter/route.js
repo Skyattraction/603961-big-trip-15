@@ -12,7 +12,7 @@ import PointNewPresenter from './point-new.js';
 import {render, remove, RenderPosition} from '../utils/render.js';
 import {sortDate, sortDuration, sortPrice} from '../utils/route-point.js';
 import {filter} from '../utils/filter.js';
-import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
+import {SortType, UpdateType, UserAction, FilterType, State as RoutePresenterViewState} from '../const.js';
 
 export default class Route {
   constructor(routeContainer, routeModel, filterModel, api) {
@@ -90,15 +90,33 @@ export default class Route {
         this._routeModel.updatePoint(updateType, update);
         break;
       case UserAction.UPDATE_POINT:
-        this._api.updatePoint(update).then((response) => {
-          this._routeModel.updatePoint(updateType, response);
-        });
+        this._pointPresenter.get(update.id).setViewState(RoutePresenterViewState.SAVING);
+        this._api.updatePoint(update)
+          .then((response) => {
+            this._routeModel.updatePoint(updateType, response);
+          })
+          .catch(() => {
+            this._pointPresenter.get(update.id).setViewState(RoutePresenterViewState.ABORTING);
+          });
         break;
       case UserAction.ADD_POINT:
-        this._routeModel.addPoint(updateType, update);
+        this._pointNewPresenter.setSaving();
+        this._api.addPoint(update)
+          .then((response) => {
+            this._routeModel.addPoint(updateType, response);
+          })
+          .catch(() => {
+            this._pointNewPresenter.setAborting();
+          });
         break;
       case UserAction.DELETE_POINT:
-        this._routeModel.deletePoint(updateType, update);
+        this._pointPresenter.get(update.id).setViewState(RoutePresenterViewState.DELETING);
+        this._api.deletePoint(update)
+          .then(() => {
+            this._routeModel.deletePoint(updateType, update);
+          }).catch(() => {
+            this._pointPresenter.get(update.id).setViewState(RoutePresenterViewState.ABORTING);
+          });
         break;
     }
   }

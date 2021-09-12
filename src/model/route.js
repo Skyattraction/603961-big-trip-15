@@ -80,7 +80,7 @@ export default class RoutePoints extends AbstractObserver {
       {},
       point,
       {
-        name: point.destination.name,
+        name: point['destination']['name'],
         basePrice: point['base_price'],
         isFavorite: point['is_favorite'],
         dateFrom: point.date_from !== null ? new Date(point.date_from) : point.date_from,
@@ -89,7 +89,7 @@ export default class RoutePoints extends AbstractObserver {
       },
     );
 
-    delete adaptedPoint.destination.name;
+    delete adaptedPoint['destination']['name'];
     delete adaptedPoint['base_price'];
     delete adaptedPoint['is_favorite'];
     delete adaptedPoint['date_from'];
