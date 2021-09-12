@@ -2,21 +2,21 @@ import dayjs from 'dayjs';
 import he from 'he';
 import flatpickr from 'flatpickr';
 import {
+  assignCityList,
   generateCityList,
   generateDestination,
   generateEventTypeList,
   generateOfferList,
-  generateMockOffer,
-  generateMockDescription,
-  generateMockPictures
-} from '../mock/route-mock';
-import {cityList} from '../utils/common.js';
+  updateDescription,
+  updateOffer,
+  updatePictures
+} from '../utils/route-point.js';
 import SmartView from './smart.js';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
-const createEditPointTemplate = (data) => {
-  const {id, dateFrom, dateTo, type, name, basePrice, destination, offer, isDisabled} = data;
+const createEditPointTemplate = (data, initialOffers, destinations) => {
+  const {id, dateFrom, dateTo, type, name, basePrice, offers, isDisabled} = data;
   const dateFromTime = dateFrom !== null
     ? dayjs(dateFrom).format('DD/MM/YY HH:mm')
     : '';
@@ -37,7 +37,7 @@ const createEditPointTemplate = (data) => {
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${generateEventTypeList(id, type)}
+              ${generateEventTypeList(id, type, initialOffers)}
             </fieldset>
           </div>
         </div>
@@ -48,7 +48,7 @@ const createEditPointTemplate = (data) => {
           </label>
           <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${name}" list="destination-list-${id}">
           <datalist id="destination-list-${id}">
-          ${generateCityList()}
+          ${generateCityList(destinations)}
           </datalist>
         </div>
 
@@ -75,7 +75,7 @@ const createEditPointTemplate = (data) => {
         </button>
       </header>
       <section class="event__details">
-      ${offer ?
+      ${offers ?
     `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
@@ -83,17 +83,19 @@ const createEditPointTemplate = (data) => {
         ${generateOfferList(data)}
       </div>
     </section>` : ''}
-    ${generateDestination(destination)}
+    ${generateDestination(data)}
       </section>
     </form>
   </li>`;
 };
 
 export default class EditPoint extends SmartView {
-  constructor(data) {
+  constructor(data, offers, destinations) {
     super();
     this._data = EditPoint.parsePointToData(data);
     this._reserveData = Object.assign({}, data);
+    this._offers = offers;
+    this._destinations = destinations;
     this._datepickerStart = null;
     this._datepickerEnd = null;
 
@@ -133,7 +135,7 @@ export default class EditPoint extends SmartView {
   }
 
   getTemplate() {
-    return createEditPointTemplate(this._data);
+    return createEditPointTemplate(this._data, this._offers, this._destinations);
   }
 
   _resetDatepicker() {
@@ -256,13 +258,14 @@ export default class EditPoint extends SmartView {
 
   _destinationInputBlurHandler(evt) {
     if(evt.target.value) {
-      if(cityList().includes(he.encode(evt.target.value))) {
+      if(assignCityList(this._destinations).includes(he.encode(evt.target.value))) {
         evt.target.setCustomValidity('');
+        const targetName = evt.target.value;
         this.updateData({
-          name: evt.target.value,
+          name: targetName,
           destination: {
-            description: generateMockDescription(),
-            pictures: generateMockPictures(),
+            description: updateDescription(targetName, this._destinations),
+            pictures: updatePictures(targetName, this._destinations),
           },
         });
       } else {
@@ -283,7 +286,7 @@ export default class EditPoint extends SmartView {
 
     this.updateData({
       type: evt.target.textContent,
-      offer: generateMockOffer(),
+      offers: updateOffer(this._offers, evt.target.textContent),
     });
   }
 
@@ -301,11 +304,12 @@ export default class EditPoint extends SmartView {
     this.updateData({
       selectedOffers: this._data.selectedOffers,
     });
+    this._callback.offerClick(EditPoint.parseDataToPoint(this._data));
   }
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._data);
+    this._callback.formSubmit(EditPoint.parseDataToPoint(this._data));
   }
 
   _deleteClickHandler(evt) {
@@ -316,6 +320,7 @@ export default class EditPoint extends SmartView {
   _closeClickHandler(evt) {
     evt.preventDefault();
     this._callback.closeClick();
+
   }
 
   setFormSubmitHandler(callback) {
@@ -331,6 +336,10 @@ export default class EditPoint extends SmartView {
   setCloseClickHandler(callback) {
     this._callback.closeClick = callback;
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._closeClickHandler);
+  }
+
+  setOfferUpdateClickHandler(callback){
+    this._callback.offerClick = callback;
   }
 
   static parsePointToData(point) {

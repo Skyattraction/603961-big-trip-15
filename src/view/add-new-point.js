@@ -3,20 +3,21 @@ import he from 'he';
 import flatpickr from 'flatpickr';
 import { nanoid } from 'nanoid';
 import {
+  assignCityList,
   generateCityList,
   generateDestination,
   generateEventTypeList,
   generateOfferList,
-  generateMockOffer,
-  generateMockDescription,
-  generateMockPictures } from '../mock/route-mock';
-import {cityList} from '../utils/common.js';
+  updateDescription,
+  updateOffer,
+  updatePictures
+} from '../utils/route-point.js';
 import SmartView from './smart.js';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
-const createAddNewPointTemplate = (data) => {
-  const {id, dateFrom, dateTo, type, name, basePrice, destination, offer, isDisabled} = data;
+const createAddNewPointTemplate = (data, initialOffers, destinations) => {
+  const {id, dateFrom, dateTo, type, name, basePrice, offers, isDisabled} = data;
   const dateFromTime = dateFrom !== null
     ? dayjs(dateFrom).format('DD/MM/YY HH:mm')
     : '';
@@ -37,7 +38,7 @@ const createAddNewPointTemplate = (data) => {
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${generateEventTypeList(id, type)}
+              ${generateEventTypeList(id, type, initialOffers)}
             </fieldset>
           </div>
         </div>
@@ -48,7 +49,7 @@ const createAddNewPointTemplate = (data) => {
           </label>
           <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${name}" list="destination-list-${id}">
           <datalist id="destination-list-${id}">
-            ${generateCityList()}
+            ${generateCityList(destinations)}
           </datalist>
         </div>
 
@@ -72,7 +73,7 @@ const createAddNewPointTemplate = (data) => {
         <button class="event__reset-btn" type="reset">Cancel</button>
       </header>
       <section class="event__details">
-      ${offer ?
+      ${offers ?
     `<section class="event__section  event__section--offers">
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
@@ -80,23 +81,22 @@ const createAddNewPointTemplate = (data) => {
             ${generateOfferList(data)}
           </div>
         </section>` : ''}
-        ${generateDestination(destination)}
+        ${generateDestination(data)}
       </section>
     </form>
   </li>`;
 };
 
 export default class AddNewPoint extends SmartView {
-  constructor() {
+  constructor(offers, destinations) {
     super();
+    this._offers = offers;
+    this._destinations = destinations;
     this._initialData = {
-      type: 'flight',
+      type: this._offers[0].type,
       name: '',
-      offer: [],
-      destination: {
-        description: null,
-        pictures: null,
-      },
+      offers: this._offers[0].offers,
+      destination: {},
       basePrice: '',
       dateFrom: dayjs().format('DD/MM/YY HH:mm'),
       dateTo: dayjs().format('DD/MM/YY HH:mm'),
@@ -106,6 +106,8 @@ export default class AddNewPoint extends SmartView {
     };
     this._data = AddNewPoint.parsePointToData(this._initialData);
     this._reserveData = Object.assign({}, this._data);
+    this._offers = offers;
+    this._destinations = destinations;
     this._datepickerStart = null;
     this._datepickerEnd = null;
 
@@ -143,7 +145,7 @@ export default class AddNewPoint extends SmartView {
   }
 
   getTemplate() {
-    return createAddNewPointTemplate(this._data);
+    return createAddNewPointTemplate(this._data, this._offers, this._destinations);
   }
 
   _resetDatepicker() {
@@ -267,13 +269,14 @@ export default class AddNewPoint extends SmartView {
 
   _destinationInputBlurHandler(evt) {
     if(evt.target.value) {
-      if(cityList().includes(he.encode(evt.target.value))) {
+      if(assignCityList(this._destinations).includes(he.encode(evt.target.value))) {
         evt.target.setCustomValidity('');
+        const targetName = evt.target.value;
         this.updateData({
-          name: evt.target.value,
+          name: targetName,
           destination: {
-            description: generateMockDescription(),
-            pictures: generateMockPictures(),
+            description: updateDescription(targetName, this._destinations),
+            pictures: updatePictures(targetName, this._destinations),
           },
           isDisabled: this._data.basePrice === '',
         });
@@ -295,7 +298,7 @@ export default class AddNewPoint extends SmartView {
 
     this.updateData({
       type: evt.target.textContent,
-      offer: generateMockOffer(),
+      offers: updateOffer(this._offers, evt.target.textContent),
     });
   }
 

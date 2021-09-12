@@ -16,13 +16,16 @@ export default class PointNew {
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
-  init(callback) {
+  init(callback, offers, destinations) {
     this._destroyCallback = callback;
+    this._offers = offers;
+    this._destinations = destinations;
+
     if (this._pointAddComponent !== null) {
       return;
     }
 
-    this._pointAddComponent = new AddNewPointView();
+    this._pointAddComponent = new AddNewPointView(this._offers, this._destinations);
     this._pointAddComponent.setFormSubmitHandler(this._handleFormSubmit);
     this._pointAddComponent.setDeleteClickHandler(this._handleDeleteClick);
 
@@ -46,7 +49,7 @@ export default class PointNew {
 
   _handleFormSubmit(point) {
     this._changeData(
-      UserAction.ADD_TASK,
+      UserAction.ADD_POINT,
       UpdateType.MAJOR,
       // Пока у нас нет сервера, который бы после сохранения
       // выдывал честный id задачи, нам нужно позаботиться об этом самим

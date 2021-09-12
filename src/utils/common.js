@@ -1,11 +1,11 @@
-import {mockedPoints} from '../main.js';
+export const formatMsToTime = (duration) => {
+  let minutes = Math.floor((duration / (1000 * 60)) % 60);
+  let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+  let days = Math.floor((duration / (1000 * 60 * 60)) % 1);
 
-//regenerating for future server data:
-export const cityList = () => {
-  const list = [];
-  mockedPoints.forEach((point) => {
-    list.push(point.name);
-  });
-  const resultedList = [... new Set(list)];
-  return resultedList;
+  days = (days < 10) ? `0${days}` : days;
+  hours = (hours < 10) ? `0${hours}` : hours;
+  minutes = (minutes < 10) ? `0${minutes}` : minutes;
+
+  return `${days > 0 ? `${days}D ` : ''}${hours > 0 ? `${hours}H ` : ''}${minutes}M`;
 };
