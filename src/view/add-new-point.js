@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import he from 'he';
 import flatpickr from 'flatpickr';
-import { nanoid } from 'nanoid';
 import {
   assignCityList,
   generateCityList,
@@ -17,7 +16,18 @@ import SmartView from './smart.js';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const createAddNewPointTemplate = (data, initialOffers, destinations) => {
-  const {id, dateFrom, dateTo, type, name, basePrice, offers, isDisabled} = data;
+  const {
+    id,
+    dateFrom,
+    dateTo,
+    type,
+    name,
+    basePrice,
+    offers,
+    isDisabled,
+    isDisabledByLoad,
+    isSaving,
+  } = data;
   const dateFromTime = dateFrom !== null
     ? dayjs(dateFrom).format('DD/MM/YY HH:mm')
     : '';
@@ -33,7 +43,7 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
             <span class="visually-hidden">Choose event type</span>
             <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
+          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox" ${isDisabledByLoad ? 'disabled' : ''}>
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
@@ -47,7 +57,14 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
           <label class="event__label  event__type-output" for="event-destination-${id}">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${name}" list="destination-list-${id}">
+            <input
+            class="event__input  event__input--destination"
+            id="event-destination-${id}"
+            type="text"
+            name="event-destination"
+            value="${name}"
+            list="destination-list-${id}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
           <datalist id="destination-list-${id}">
             ${generateCityList(destinations)}
           </datalist>
@@ -55,10 +72,22 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-${id}">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dateFromTime}">
+          <input
+            class="event__input  event__input--time"
+            id="event-start-time-${id}"
+            type="text"
+            name="event-start-time"
+            value="${dateFromTime}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
           &mdash;
           <label class="visually-hidden" for="event-end-time-${id}">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dateToTime}">
+          <input
+            class="event__input  event__input--time"
+            id="event-end-time-${id}"
+            type="text"
+            name="event-end-time"
+            value="${dateToTime}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -66,10 +95,17 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${basePrice}">
+          <input
+            class="event__input  event__input--price"
+            id="event-price-${id}"
+            type="text" name="event-price"
+            value="${basePrice}"
+            ${isDisabledByLoad ? 'disabled' : ''}>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" ${isDisabled ? 'disabled' : ''} type="submit">Save</button>
+        <button class="event__save-btn  btn  btn--blue" ${isDisabled || isDisabledByLoad ? 'disabled' : ''} type="submit">
+          ${isSaving ? 'Saving...' : 'Save'}
+        </button>
         <button class="event__reset-btn" type="reset">Cancel</button>
       </header>
       <section class="event__details">
@@ -98,9 +134,8 @@ export default class AddNewPoint extends SmartView {
       offers: this._offers[0].offers,
       destination: {},
       basePrice: '',
-      dateFrom: dayjs().format('DD/MM/YY HH:mm'),
-      dateTo: dayjs().format('DD/MM/YY HH:mm'),
-      id: nanoid(),
+      dateFrom: dayjs().toDate(),
+      dateTo: dayjs().toDate(),
       isFavorite: false,
       selectedOffers: [],
     };
@@ -342,13 +377,19 @@ export default class AddNewPoint extends SmartView {
     return Object.assign(
       {},
       point,
-      {isDisabled: point.name === '' || point.basePrice === ''},
+      {
+        isDisabled: point.name === '' || point.basePrice === '',
+        isDisabledByLoad: false,
+        isSaving: false,
+      },
     );
   }
 
   static parseDataToPoint(data) {
     data = Object.assign({}, data);
     delete data.isDisabled;
+    delete data.isDisabledByLoad;
+    delete data.isSaving;
     return data;
   }
 }

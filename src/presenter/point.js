@@ -3,12 +3,7 @@ import {
   RoutePointView
 } from '../view/markup-proxy.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
-import {UserAction, UpdateType} from '../const.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import {UserAction, UpdateType, Mode, State} from '../const.js';
 
 export default class Point {
   constructor(pointContainer, changeData, changeMode) {
@@ -59,7 +54,8 @@ export default class Point {
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._editPointComponent, prevPointEditComponent);
+      replace(this._routePointComponent, prevPointEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -74,6 +70,39 @@ export default class Point {
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceEditFormToPoint();
+    }
+  }
+
+  setViewState(state) {
+    if (this._mode === Mode.DEFAULT) {
+      return;
+    }
+
+    const resetFormState = () => {
+      this._editPointComponent.updateData({
+        isDisabledByLoad: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    switch (state) {
+      case State.SAVING:
+        this._editPointComponent.updateData({
+          isDisabledByLoad: true,
+          isSaving: true,
+        });
+        break;
+      case State.DELETING:
+        this._editPointComponent.updateData({
+          isDisabledByLoad: true,
+          isDeleting: true,
+        });
+        break;
+      case State.ABORTING:
+        this._routePointComponent.shake(resetFormState);
+        this._editPointComponent.shake(resetFormState);
+        break;
     }
   }
 
@@ -150,6 +179,5 @@ export default class Point {
       isMinorUpdate ? UpdateType.MINOR : UpdateType.MAJOR,
       update,
     );
-    this._replaceEditFormToPoint();
   }
 }
