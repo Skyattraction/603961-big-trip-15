@@ -206,7 +206,6 @@ export default class AddNewPoint extends SmartView {
       {
         dateFormat: 'd/m/y H:i',
         defaultDate: this._data.dateFrom,
-        maxDate: this._data.dateTo,
         enableTime: true,
         'time_24hr': true,
         onChange: this._dateStartChangeHandler,
@@ -259,7 +258,8 @@ export default class AddNewPoint extends SmartView {
   _dateStartChangeHandler([userDate]) {
     this.updateData({
       dateFrom: userDate,
-    }), true;
+      dateTo: userDate,
+    });
   }
 
   _dateEndChangeHandler([userDate]) {
