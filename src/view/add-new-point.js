@@ -258,8 +258,13 @@ export default class AddNewPoint extends SmartView {
   _dateStartChangeHandler([userDate]) {
     this.updateData({
       dateFrom: userDate,
-      dateTo: userDate,
     });
+
+    if(dayjs(this._data.dateTo).diff(dayjs(userDate)) < 0) {
+      this.updateData({
+        dateTo: userDate,
+      });
+    }
   }
 
   _dateEndChangeHandler([userDate]) {
