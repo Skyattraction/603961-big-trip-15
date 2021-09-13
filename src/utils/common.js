@@ -11,3 +11,5 @@ export const formatMsToTime = (duration) => {
 
   return `${days > 0 ? `${days}D ` : ''}${hours > 0 ? `${hours}H ` : ''}${minutes}M`;
 };
+
+export const isOnline = () => window.navigator.onLine;

@@ -1,5 +1,7 @@
 import {AddNewPointView} from '../view/markup-proxy.js';
+import {isOnline} from '../utils/common.js';
 import {remove, render, RenderPosition} from '../utils/render.js';
+import {toast} from '../utils/toast.js';
 import {UserAction, UpdateType} from '../const.js';
 
 export default class PointNew {
@@ -65,6 +67,11 @@ export default class PointNew {
   }
 
   _handleFormSubmit(point) {
+    if (!isOnline()) {
+      this.setAborting();
+      toast('You can\'t create new point offline');
+      return;
+    }
     this._changeData(
       UserAction.ADD_POINT,
       UpdateType.MAJOR,

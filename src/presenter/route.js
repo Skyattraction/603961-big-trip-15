@@ -87,7 +87,10 @@ export default class Route {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_VIEW:
-        this._routeModel.updatePoint(updateType, update);
+        this._api.updatePoint(update)
+          .then((response) => {
+            this._routeModel.updatePoint(updateType, response);
+          });
         break;
       case UserAction.UPDATE_POINT:
         this._pointPresenter.get(update.id).setViewState(RoutePresenterViewState.SAVING);

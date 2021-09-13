@@ -2,7 +2,9 @@ import {
   EditPointView,
   RoutePointView
 } from '../view/markup-proxy.js';
+import {isOnline} from '../utils/common.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
+import {toast} from '../utils/toast.js';
 import {UserAction, UpdateType, Mode, State} from '../const.js';
 
 export default class Point {
@@ -128,6 +130,10 @@ export default class Point {
   }
 
   _handleEditClick() {
+    if (!isOnline()) {
+      toast('You can\'t edit point offline');
+      return;
+    }
     this._replacePointToEditForm();
   }
 
@@ -136,6 +142,11 @@ export default class Point {
   }
 
   _handleDeleteClick(point) {
+    if (!isOnline()) {
+      this.setViewState(State.ABORTING);
+      toast('You can\'t delete point offline');
+      return;
+    }
     this._changeData(
       UserAction.DELETE_POINT,
       UpdateType.MAJOR,
@@ -153,8 +164,8 @@ export default class Point {
 
   _handleFavoriteClick() {
     this._changeData(
-      UserAction.UPDATE_POINT,
-      UpdateType.MINOR,
+      UserAction.UPDATE_VIEW,
+      UpdateType.PATCH,
       Object.assign(
         {},
         this._point,
@@ -166,6 +177,11 @@ export default class Point {
   }
 
   _handleFormSubmit(update) {
+    if (!isOnline()) {
+      this.setViewState(State.ABORTING);
+      toast('You can\'t edit point offline');
+      return;
+    }
     const incomingUpdate = JSON.parse(JSON.stringify(update));
     const currentPoint = JSON.parse(JSON.stringify(this._point));
     delete incomingUpdate.type;
