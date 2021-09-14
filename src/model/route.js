@@ -85,7 +85,6 @@ export default class RoutePoints extends AbstractObserver {
         isFavorite: point['is_favorite'],
         dateFrom: point.date_from !== null ? new Date(point.date_from) : point.date_from,
         dateTo: point.date_to !== null ? new Date(point.date_to) : point.date_to,
-        selectedOffers: [],
       },
     );
 
@@ -96,6 +95,22 @@ export default class RoutePoints extends AbstractObserver {
     delete adaptedPoint['date_to'];
 
     return adaptedPoint;
+  }
+
+  static adaptToStore(items) {
+    const adaptedItems = [];
+    for(let index = 0; index < items.length; index++) {
+      const adaptedItem = Object.assign(
+        {},
+        items[index],
+        {
+          id: index,
+        },
+      );
+      adaptedItems.push(adaptedItem);
+    }
+
+    return adaptedItems;
   }
 
   static adaptToServer(point) {
@@ -119,7 +134,6 @@ export default class RoutePoints extends AbstractObserver {
     delete adaptedPoint.isFavorite;
     delete adaptedPoint.dateFrom;
     delete adaptedPoint.dateTo;
-    delete adaptedPoint.selectedOffers;
 
     return adaptedPoint;
   }

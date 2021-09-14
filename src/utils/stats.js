@@ -2,8 +2,19 @@ import dayjs from 'dayjs';
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {generateDuration} from './route-point.js';
+import {getWeightForNull} from './common.js';
 
 const reducer = (previousValue, currentValue) => previousValue + currentValue;
+
+const sortVal = (pointA, pointB) => {
+  const weight = getWeightForNull(pointA, pointB);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return pointB - pointA;
+};
 
 const eventTypesList = (points) => {
   const list = [];
@@ -32,6 +43,9 @@ const generateMoneyValuesForType = (points) => {
 
     list.push(accumulatedPrice);
   });
+
+  list.sort(sortVal);
+
   return list;
 };
 
@@ -41,6 +55,9 @@ const generateQuantityForType = (points) => {
     const pointsWithType = points.filter((point) => point.type === item);
     list.push(pointsWithType.length);
   });
+
+  list.sort(sortVal);
+
   return list;
 };
 
@@ -57,6 +74,9 @@ const generateDurationForType = (points) => {
     });
     list.push(durationForType);
   });
+
+  list.sort(sortVal);
+
   return list;
 };
 

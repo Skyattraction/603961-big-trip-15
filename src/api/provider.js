@@ -1,4 +1,4 @@
-import RouteModel from '../model/route';
+import RoutePointsModel from '../model/route.js';
 import {isOnline} from '../utils/common.js';
 
 const getSyncedPoints = (items) =>
@@ -12,24 +12,31 @@ const createStoreStructure = (items) =>
       [current.id]: current,
     }), {});
 
+const createNoIdStoreStructure = (items) =>
+  items
+    .reduce((acc, current) => Object.assign({}, acc, {
+      [current.id]: current,
+    }), {});
 
 export default class Provider {
-  constructor(api, store) {
+  constructor(api, store, offersStore, destinationStore) {
     this._api = api;
     this._store = store;
+    this._offersStore = offersStore;
+    this._destinationStore = destinationStore;
   }
 
   getOffers() {
     if (isOnline()) {
       return this._api.getOffers()
         .then((offers) => {
-          const items = createStoreStructure(offers);
-          this._store.setItems(items);
+          const items = createNoIdStoreStructure(RoutePointsModel.adaptToStore(offers));
+          this._offersStore.setItems(items);
           return offers;
         });
     }
 
-    const storeOffers = Object.values(this._store.getItems());
+    const storeOffers = Object.values(this._offersStore.getItems());
 
     return Promise.resolve(storeOffers);
   }
@@ -38,13 +45,13 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getDestinations()
         .then((destinations) => {
-          const items = createStoreStructure(destinations);
-          this._store.setItems(items);
+          const items = createNoIdStoreStructure(RoutePointsModel.adaptToStore(destinations));
+          this._destinationStore.setItems(items);
           return destinations;
         });
     }
 
-    const storeDestinations = Object.values(this._store.getItems());
+    const storeDestinations = Object.values(this._destinationStore.getItems());
 
     return Promise.resolve(storeDestinations);
   }
@@ -53,7 +60,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getPoints()
         .then((points) => {
-          const items = createStoreStructure(points.map(RouteModel.adaptToServer));
+          const items = createStoreStructure(points.map(RoutePointsModel.adaptToServer));
           this._store.setItems(items);
           return points;
         });
@@ -61,19 +68,19 @@ export default class Provider {
 
     const storePoints = Object.values(this._store.getItems());
 
-    return Promise.resolve(storePoints.map(RouteModel.adaptToClient));
+    return Promise.resolve(storePoints.map(RoutePointsModel.adaptToClient));
   }
 
   updatePoint(point) {
     if (isOnline()) {
       return this._api.updatePoint(point)
         .then((updatedPoint) => {
-          this._store.setItem(updatedPoint.id, RouteModel.adaptToServer(updatedPoint));
+          this._store.setItem(updatedPoint.id, RoutePointsModel.adaptToServer(updatedPoint));
           return updatedPoint;
         });
     }
 
-    this._store.setItem(point.id, RouteModel.adaptToServer(Object.assign({}, point)));
+    this._store.setItem(point.id, RoutePointsModel.adaptToServer(Object.assign({}, point)));
 
     return Promise.resolve(point);
   }
@@ -82,7 +89,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.addPoint(point)
         .then((newPoint) => {
-          this._store.setItem(newPoint.id, RouteModel.adaptToServer(newPoint));
+          this._store.setItem(newPoint.id, RoutePointsModel.adaptToServer(newPoint));
           return newPoint;
         });
     }
@@ -105,12 +112,9 @@ export default class Provider {
 
       return this._api.sync(storePoints)
         .then((response) => {
-          // Забираем из ответа синхронизированные задачи
           const createdPoints = getSyncedPoints(response.created);
           const updatedPoints = getSyncedPoints(response.updated);
 
-          // Добавляем синхронизированные задачи в хранилище.
-          // Хранилище должно быть актуальным в любой момент.
           const items = createStoreStructure([...createdPoints, ...updatedPoints]);
 
           this._store.setItems(items);

@@ -57,7 +57,16 @@ export default class Route {
     this._filterModel.removeObserver(this._handleModelEvent);
   }
 
+  createNewPoint(callback) {
+    this._currentSortType = SortType.DAY;
+    this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this._pointNewPresenter.init(callback, this._routeModel.getOffers(), this._routeModel.getDestinations());
+  }
+
   _getPoints() {
+    if(this._filterModel.getFilter() === FilterType.NONE) {
+      this._filterModel.setFilter(UpdateType.PATCH, FilterType.EVERYTHING);
+    }
     this._filterType = this._filterModel.getFilter();
     const points = this._routeModel.getPoints();
     const filteredPoints = filter[this._filterType](points);
@@ -86,10 +95,19 @@ export default class Route {
 
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
+      case UserAction.UPDATE_LOCAL:
+        this._api.updatePoint(update)
+          .then((response) => {
+            this._routeModel.updatePoint(updateType, response);
+          });
+        break;
       case UserAction.UPDATE_VIEW:
         this._api.updatePoint(update)
           .then((response) => {
             this._routeModel.updatePoint(updateType, response);
+          })
+          .catch(() => {
+            this._pointPresenter.get(update.id).setViewState(RoutePresenterViewState.ABORTING);
           });
         break;
       case UserAction.UPDATE_POINT:
@@ -127,7 +145,7 @@ export default class Route {
   _handleModelEvent(updateType, data) {
     switch (updateType) {
       case UpdateType.PATCH:
-        this._pointPresenter.get(data.id).init(data, this._getOffers(), this._getDestinations());
+        this._pointPresenter.get(data.id);
         this._resetHeader();
         break;
       case UpdateType.MINOR:
@@ -153,12 +171,6 @@ export default class Route {
     this._currentSortType = sortType;
     this._clearRoute();
     this._renderRoute(true);
-  }
-
-  createNewPoint(callback) {
-    this._currentSortType = SortType.DAY;
-    this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this._pointNewPresenter.init(callback, this._routeModel.getOffers(), this._routeModel.getDestinations());
   }
 
   _renderSort() {

@@ -117,6 +117,7 @@ export default class Point {
 
   _replaceEditFormToPoint() {
     replace(this._routePointComponent, this._editPointComponent);
+    this._routePointComponent.updateData(this._point);
     document.removeEventListener('keydown', this._escKeyDownHandler);
     this._mode = Mode.DEFAULT;
   }
@@ -155,6 +156,11 @@ export default class Point {
   }
 
   _handleOfferClick(point) {
+    if (!isOnline()) {
+      this.setViewState(State.ABORTING);
+      toast('You can\'t edit point offline');
+      return;
+    }
     this._changeData(
       UserAction.UPDATE_VIEW,
       UpdateType.PATCH,
@@ -164,8 +170,8 @@ export default class Point {
 
   _handleFavoriteClick() {
     this._changeData(
-      UserAction.UPDATE_VIEW,
-      UpdateType.PATCH,
+      UserAction.UPDATE_LOCAL,
+      UpdateType.MINOR,
       Object.assign(
         {},
         this._point,

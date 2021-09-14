@@ -2,11 +2,15 @@ const BAR_HEIGHT = 55;
 const SHAKE_ANIMATION_TIMEOUT = 600;
 const SHOW_TIME = 5000;
 
-const AUTHORIZATION = 'Basic tjds53dfDscloya2j';
+const AUTHORIZATION = 'Basic tjdsd3dfDscloya2j';
 const END_POINT = 'https://15.ecmascript.pages.academy/big-trip';
 const STORE_PREFIX = 'bigtrip-localstorage';
+const OFFERS_PREFIX = 'offers';
+const DESTINATIONS_PREFIX = 'destinations';
 const STORE_VER = 'v15';
 const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
+const OFFERS_STORE_NAME = `${STORE_PREFIX}-${OFFERS_PREFIX}-${STORE_VER}`;
+const DESTINATIONS_STORE_NAME = `${STORE_PREFIX}-${DESTINATIONS_PREFIX}-${STORE_VER}`;
 
 const Method = {
   GET: 'GET',
@@ -21,6 +25,7 @@ const SuccessHTTPStatusRange = {
 };
 
 const UserAction = {
+  UPDATE_LOCAL: 'UPDATE_LOCAL',
   UPDATE_VIEW: 'UPDATE_VIEW',
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
@@ -44,6 +49,7 @@ const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PAST: 'past',
+  NONE: 'none',
 };
 
 const NoPointsMessage = {
@@ -76,6 +82,8 @@ export {
   AUTHORIZATION,
   END_POINT,
   STORE_NAME,
+  OFFERS_STORE_NAME,
+  DESTINATIONS_STORE_NAME,
   Method,
   SuccessHTTPStatusRange,
   UserAction,
