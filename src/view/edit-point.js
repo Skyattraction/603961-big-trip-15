@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import he from 'he';
 import flatpickr from 'flatpickr';
+import {isOnline} from '../utils/common.js';
 import {
   assignCityList,
   generateCityList,
@@ -8,7 +9,6 @@ import {
   generateEventTypeList,
   generateOfferList,
   updateDescription,
-  updateOffer,
   updatePictures
 } from '../utils/route-point.js';
 import SmartView from './smart.js';
@@ -23,7 +23,6 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
     type,
     name,
     basePrice,
-    offers,
     isDisabled,
     isDisabledByLoad,
     isSaving,
@@ -35,6 +34,7 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
   const dateToTime = dateTo !== null
     ? dayjs(dateTo).format('DD/MM/YY HH:mm')
     : '';
+  const isOffersDisplaying = initialOffers.filter((currentOffer) => currentOffer.type === type)[0].offers.length  > 0;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -101,7 +101,7 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
             class="event__input  event__input--price"
             id="event-price-${id}"
             type="text" name="event-price"
-            value="${basePrice}"
+            value="${he.encode(basePrice.toString())}"
             ${isDisabledByLoad ? 'disabled' : ''}>
         </div>
 
@@ -116,12 +116,12 @@ const createEditPointTemplate = (data, initialOffers, destinations) => {
         </button>
       </header>
       <section class="event__details">
-      ${offers ?
+      ${isOffersDisplaying ?
     `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${generateOfferList(data)}
+        ${generateOfferList(data, initialOffers)}
       </div>
     </section>` : ''}
     ${generateDestination(data)}
@@ -332,24 +332,28 @@ export default class EditPoint extends SmartView {
 
     this.updateData({
       type: evt.target.textContent,
-      offers: updateOffer(this._offers, evt.target.textContent),
+      offers: [],
     });
   }
 
   _offersClickHandler(evt) {
-    const filteredOffer = (this._data.selectedOffers).filter((currentOffer) => currentOffer.title === evt.target.dataset.title);
-    if(filteredOffer.length > 0) {
-      const index = (this._data.selectedOffers).map((e) => e.title).indexOf(evt.target.dataset.title);
-      (this._data.selectedOffers).splice(index, 1);
-    } else {
-      const selectedOffer = new Object();
-      selectedOffer.title = evt.target.dataset.title;
-      selectedOffer.price = evt.target.dataset.price;
-      (this._data.selectedOffers).push(selectedOffer);
+    if (isOnline()) {
+      const filteredOffer = (this._data.offers).filter((currentOffer) => currentOffer.title === evt.target.dataset.title);
+
+      if(filteredOffer.length > 0) {
+        const index = (this._data.offers).map((item) => item.title).indexOf(evt.target.dataset.title);
+        (this._data.offers).splice(index, 1);
+      } else {
+        const selectedOffer = new Object();
+        selectedOffer.title = evt.target.dataset.title;
+        selectedOffer.price = Number(evt.target.dataset.price);
+        (this._data.offers).push(selectedOffer);
+      }
+
+      this.updateData({
+        offers: this._data.offers,
+      });
     }
-    this.updateData({
-      selectedOffers: this._data.selectedOffers,
-    });
     this._callback.offerClick(EditPoint.parseDataToPoint(this._data));
   }
 

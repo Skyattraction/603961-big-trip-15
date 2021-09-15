@@ -8,7 +8,6 @@ import {
   generateEventTypeList,
   generateOfferList,
   updateDescription,
-  updateOffer,
   updatePictures
 } from '../utils/route-point.js';
 import SmartView from './smart.js';
@@ -23,7 +22,6 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
     type,
     name,
     basePrice,
-    offers,
     isDisabled,
     isDisabledByLoad,
     isSaving,
@@ -34,6 +32,7 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
   const dateToTime = dateTo !== null
     ? dayjs(dateTo).format('DD/MM/YY HH:mm')
     : '';
+  const isOffersDisplaying = initialOffers.filter((currentOffer) => currentOffer.type === type)[0].offers.length  > 0;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -99,7 +98,7 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
             class="event__input  event__input--price"
             id="event-price-${id}"
             type="text" name="event-price"
-            value="${basePrice}"
+            value="${he.encode(basePrice.toString())}"
             ${isDisabledByLoad ? 'disabled' : ''}>
         </div>
 
@@ -109,12 +108,12 @@ const createAddNewPointTemplate = (data, initialOffers, destinations) => {
         <button class="event__reset-btn" type="reset">Cancel</button>
       </header>
       <section class="event__details">
-      ${offers ?
+      ${isOffersDisplaying ?
     `<section class="event__section  event__section--offers">
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
           <div class="event__available-offers">
-            ${generateOfferList(data)}
+            ${generateOfferList(data, initialOffers)}
           </div>
         </section>` : ''}
         ${generateDestination(data)}
@@ -131,13 +130,12 @@ export default class AddNewPoint extends SmartView {
     this._initialData = {
       type: this._offers[0].type,
       name: '',
-      offers: this._offers[0].offers,
+      offers: [],
       destination: {},
       basePrice: '',
       dateFrom: dayjs().toDate(),
       dateTo: dayjs().toDate(),
       isFavorite: false,
-      selectedOffers: [],
     };
     this._data = AddNewPoint.parsePointToData(this._initialData);
     this._reserveData = Object.assign({}, this._data);
@@ -194,7 +192,6 @@ export default class AddNewPoint extends SmartView {
     }
   }
 
-  //надо поправить баги форматов датапикера
   _setDatepickerStart() {
     if (this._datepickerStart) {
       this._datepickerStart.destroy();
@@ -338,23 +335,28 @@ export default class AddNewPoint extends SmartView {
 
     this.updateData({
       type: evt.target.textContent,
-      offers: updateOffer(this._offers, evt.target.textContent),
+      offers: [],
     });
   }
 
   _offersClickHandler(evt) {
-    const filteredOffer = (this._data.selectedOffers).filter((currentOffer) => currentOffer.title === evt.target.dataset.title);
+    const filteredOffer = (this._data.offers).filter((currentOffer) => currentOffer.title === evt.target.dataset.title);
+
     if(filteredOffer.length > 0) {
-      const index = (this._data.selectedOffers).map((e) => e.title).indexOf(evt.target.dataset.title);
-      (this._data.selectedOffers).splice(index, 1);
+      const index = (this._data.offers).map((item) => item.title).indexOf(evt.target.dataset.title);
+      (this._data.offers).splice(index, 1);
     } else {
       const selectedOffer = new Object();
       selectedOffer.title = evt.target.dataset.title;
-      selectedOffer.price = evt.target.dataset.price;
-      (this._data.selectedOffers).push(selectedOffer);
+      selectedOffer.price = Number(evt.target.dataset.price);
+      (this._data.offers).push(selectedOffer);
     }
+
     this.updateData({
-      selectedOffers: this._data.selectedOffers,
+      offers: this._data.offers,
+    });
+    this.updateData({
+      offers: this._data.offers,
     });
   }
 
@@ -376,6 +378,10 @@ export default class AddNewPoint extends SmartView {
   setDeleteClickHandler(callback) {
     this._callback.formReset = callback;
     this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._deleteClickHandler);
+  }
+
+  setOfferUpdateClickHandler(callback){
+    this._callback.offerClick = callback;
   }
 
   static parsePointToData(point) {

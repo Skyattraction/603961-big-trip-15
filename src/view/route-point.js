@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 import {generateDuration} from '../utils/route-point.js';
-import AbstractView from './abstract.js';
+import SmartView from './smart.js';
 
 const createRoutePointTemplate = (point) => {
-  const {dateFrom, dateTo, type, name, basePrice, selectedOffers, isFavorite} = point;
+  const {dateFrom, dateTo, type, name, basePrice, offers, isFavorite} = point;
   const dateLabel = dateFrom !== null
     ? dayjs(dateFrom).format('YYYY-MM-DD')
     : '';
@@ -25,7 +25,7 @@ const createRoutePointTemplate = (point) => {
 
   const generateOptions = () => {
     let options = '';
-    selectedOffers.forEach((item) => {
+    offers.forEach((item) => {
       const optionItem = `<li class="event__offer">
         <span class="event__offer-title">${item.title}</span>
         &plus;&euro;&nbsp;
@@ -72,7 +72,7 @@ const createRoutePointTemplate = (point) => {
 };
 
 
-export default class RoutePoint extends AbstractView {
+export default class RoutePoint extends SmartView {
   constructor(point) {
     super();
     this._point = point;
@@ -83,6 +83,11 @@ export default class RoutePoint extends AbstractView {
 
   getTemplate() {
     return createRoutePointTemplate(this._point);
+  }
+
+  restoreHandlers() {
+    this.setEditClickHandler(this._callback.editClick);
+    this.setFavoriteClickHandler(this._callback.favoriteClick);
   }
 
   _editClickHandler(evt) {

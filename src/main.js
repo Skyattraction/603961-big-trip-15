@@ -11,6 +11,8 @@ import {
   AUTHORIZATION,
   END_POINT,
   STORE_NAME,
+  OFFERS_STORE_NAME,
+  DESTINATIONS_STORE_NAME,
   MenuItem,
   UpdateType
 } from './const.js';
@@ -28,7 +30,9 @@ const newEventButtonComponent = siteHeaderElement.querySelector('.trip-main__eve
 
 const api = new Api(END_POINT, AUTHORIZATION);
 const store = new Store(STORE_NAME, window.localStorage);
-const apiWithProvider = new Provider(api, store);
+const offersStore = new Store(OFFERS_STORE_NAME, window.localStorage);
+const destinationStore = new Store(DESTINATIONS_STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store, offersStore, destinationStore);
 
 const routePointsModel = new RoutePointsModel();
 const filterModel = new FilterModel();
@@ -37,7 +41,7 @@ const siteMenuComponent = new MenuView(MenuItem.TABLE);
 
 const routePresenter = new RoutePresenter(siteHeaderElement, routePointsModel, filterModel, apiWithProvider);
 const filterPresenter = new FilterPresenter(siteFiltersElement, filterModel, routePointsModel);
-const statsPresenter = new StatsPresenter(sitePageContainerElement, routePointsModel);
+const statsPresenter = new StatsPresenter(sitePageContainerElement, routePointsModel, filterModel);
 
 const handleNewPointFormClose = () => {
   newEventButtonComponent.disabled = false;
@@ -107,10 +111,12 @@ apiWithProvider.getPoints()
 window.addEventListener('load', () => {
   navigator.serviceWorker.register('/service-worker.js');
 });
+
 window.addEventListener('online', () => {
   document.title = document.title.replace(' [offline]', '');
   apiWithProvider.sync();
 });
+
 window.addEventListener('offline', () => {
   document.title += ' [offline]';
 });

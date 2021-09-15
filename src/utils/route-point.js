@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {formatMsToTime} from './common.js';
+import {formatMsToTime, getWeightForNull} from './common.js';
 
 const assignCityList = (destinations) => {
   const list = [];
@@ -19,14 +19,16 @@ const generateCityList = (destinations) => {
   return cityList;
 };
 
-const generateOfferList = (point) => {
+const generateOfferList = (point, initialOffers) => {
   let offerList = '';
-  const offer = point.offers;
+  const selectedOffers = point.offers;
   const id = point.id;
   const type = point.type;
+  const offers = initialOffers.filter((currentOffer) => currentOffer.type === type);
 
-  for(let i = 0; i < offer.length; i++) {
-    const selected = ((point.selectedOffers).filter((currentOffer) => currentOffer.title === offer[i].title));
+  for(let i = 0; i < offers[0].offers.length; i++) {
+    const offerItem = offers[0].offers[i];
+    const selected = (selectedOffers.filter((currentOffer) => currentOffer.title === offerItem.title));
 
     const optionItem = `<div class="event__offer-selector">
     <input
@@ -34,13 +36,13 @@ const generateOfferList = (point) => {
       id="event-offer-${type}-${id}-${i}"
       type="checkbox"
       name="event-offer-${type}-${id}-${i}"
-      data-title="${offer[i].title}"
-      data-price="${offer[i].price}"
+      data-title="${offerItem.title}"
+      data-price="${offerItem.price}"
       ${selected.length > 0 ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${type}-${id}-${i}">
-      <span class="event__offer-title">${offer[i].title}</span>
+      <span class="event__offer-title">${offerItem.title}</span>
       &plus;&euro;&nbsp;
-      <span class="event__offer-price">${offer[i].price}</span>
+      <span class="event__offer-price">${offerItem.price}</span>
     </label>
   </div>`;
     offerList += optionItem;
@@ -113,22 +115,6 @@ const updatePictures = (name, destinations) => {
 const updateOffer = (offers, type) => {
   const relatedOffer = offers.filter((item) => item.type === type);
   return relatedOffer[0].offers;
-};
-
-const getWeightForNull = (pointA, pointB) => {
-  if (pointA === null && pointB === null) {
-    return 0;
-  }
-
-  if (pointA === null) {
-    return 1;
-  }
-
-  if (pointB === null) {
-    return -1;
-  }
-
-  return null;
 };
 
 const sortDate = (pointA, pointB) => {
