@@ -5,7 +5,7 @@ import StatsPresenter from './presenter/stats.js';
 import {isOnline} from './utils/common.js';
 import {render, RenderPosition} from './utils/render.js';
 import {toast} from './utils/toast.js';
-import RoutePointsModel from './model/route.js';
+import RouteModel from './model/route.js';
 import FilterModel from './model/filter.js';
 import {
   AUTHORIZATION,
@@ -34,7 +34,7 @@ const offersStore = new Store(OFFERS_STORE_NAME, window.localStorage);
 const destinationStore = new Store(DESTINATIONS_STORE_NAME, window.localStorage);
 const apiWithProvider = new Provider(api, store, offersStore, destinationStore);
 
-const routePointsModel = new RoutePointsModel();
+const routePointsModel = new RouteModel();
 const filterModel = new FilterModel();
 
 const siteMenuComponent = new MenuView(MenuItem.TABLE);

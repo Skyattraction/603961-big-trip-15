@@ -1,6 +1,6 @@
 import AbstractObserver from '../utils/abstract-observer.js';
 
-export default class RoutePoints extends AbstractObserver {
+export default class Route extends AbstractObserver {
   constructor() {
     super();
     this._points = [];

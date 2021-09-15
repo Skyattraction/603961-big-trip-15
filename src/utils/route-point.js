@@ -2,12 +2,12 @@ import dayjs from 'dayjs';
 import {formatMsToTime, getWeightForNull} from './common.js';
 
 const assignCityList = (destinations) => {
-  const list = [];
+  const cities = [];
   destinations.forEach((point) => {
-    list.push(point.name);
+    cities.push(point.name);
   });
-  const resultedList = [... new Set(list)];
-  return resultedList;
+  const resultedCities = [... new Set(cities)];
+  return resultedCities;
 };
 
 const generateCityList = (destinations) => {
@@ -66,9 +66,8 @@ const generateDuration = (dateFrom, dateTo) => {
   const diff = dayjs(dateTo).diff(dayjs(dateFrom));
   if (diff >= 0) {
     return formatMsToTime(diff);
-  } else {
-    return 'Date Error';
   }
+  return 'Date Error';
 };
 
 const generatePhotosList = (pictures) => {

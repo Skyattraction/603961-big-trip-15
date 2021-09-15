@@ -2,7 +2,7 @@ const BAR_HEIGHT = 55;
 const SHAKE_ANIMATION_TIMEOUT = 600;
 const SHOW_TIME = 5000;
 
-const AUTHORIZATION = 'Basic tjdsd3dfDscloya2j';
+const AUTHORIZATION = 'Basic tj8sd3dfDscloya2j';
 const END_POINT = 'https://15.ecmascript.pages.academy/big-trip';
 const STORE_PREFIX = 'bigtrip-localstorage';
 const OFFERS_PREFIX = 'offers';

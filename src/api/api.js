@@ -1,5 +1,5 @@
 import {Method, SuccessHTTPStatusRange} from '../const.js';
-import RoutePointsModel from '../model/route.js';
+import RouteModel from '../model/route.js';
 
 export default class Api {
   constructor(endPoint, authorization) {
@@ -10,7 +10,7 @@ export default class Api {
   getPoints() {
     return this._load({url: 'points'})
       .then(Api.toJSON)
-      .then((points) => points.map(RoutePointsModel.adaptToClient));
+      .then((points) => points.map(RouteModel.adaptToClient));
   }
 
   getOffers() {
@@ -27,22 +27,22 @@ export default class Api {
     return this._load({
       url: `points/${point.id}`,
       method: Method.PUT,
-      body: JSON.stringify(RoutePointsModel.adaptToServer(point)),
+      body: JSON.stringify(RouteModel.adaptToServer(point)),
       headers: new Headers({'Content-Type': 'application/json'}),
     })
       .then(Api.toJSON)
-      .then(RoutePointsModel.adaptToClient);
+      .then(RouteModel.adaptToClient);
   }
 
   addPoint(point) {
     return this._load({
       url: 'points',
       method: Method.POST,
-      body: JSON.stringify(RoutePointsModel.adaptToServer(point)),
+      body: JSON.stringify(RouteModel.adaptToServer(point)),
       headers: new Headers({'Content-Type': 'application/json'}),
     })
       .then(Api.toJSON)
-      .then(RoutePointsModel.adaptToClient);
+      .then(RouteModel.adaptToClient);
   }
 
   deletePoint(point) {

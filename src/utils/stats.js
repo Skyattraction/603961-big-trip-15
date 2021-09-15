@@ -16,54 +16,54 @@ const sortVal = (pointA, pointB) => {
   return pointB - pointA;
 };
 
-const eventTypesList = (points) => {
-  const list = [];
+const generateEventTypesList = (points) => {
+  const types = [];
   points.forEach((point) => {
-    list.push(point.type);
+    types.push(point.type);
   });
-  const resultedList = [... new Set(list)];
-  return resultedList;
+  const resultedTypes = [... new Set(types)];
+  return resultedTypes;
 };
 
-const eventTypesListCaps = (points) => {
-  const list = [];
-  eventTypesList(points).forEach((item) => {
+const generateEventTypesListCaps = (points) => {
+  const types = [];
+  generateEventTypesList(points).forEach((item) => {
     const itemCaps = item.toUpperCase();
-    list.push(itemCaps);
+    types.push(itemCaps);
   });
-  return list;
+  return types;
 };
 
 const generateMoneyValuesForType = (points) => {
-  const list = [];
-  eventTypesList(points).forEach((item) => {
+  const accumulatedPrices = [];
+  generateEventTypesList(points).forEach((item) => {
     const pointsWithType = points.filter((point) => point.type === item);
-    const prices = pointsWithType.map((point) => point.basePrice);
-    const accumulatedPrice = prices.reduce(reducer, 0);
+    const basePrices = pointsWithType.map((point) => point.basePrice);
+    const accumulatedPrice = basePrices.reduce(reducer, 0);
 
-    list.push(accumulatedPrice);
+    accumulatedPrices.push(accumulatedPrice);
   });
 
-  list.sort(sortVal);
+  accumulatedPrices.sort(sortVal);
 
-  return list;
+  return accumulatedPrices;
 };
 
 const generateQuantityForType = (points) => {
-  const list = [];
-  eventTypesList(points).forEach((item) => {
+  const typeQuantities = [];
+  generateEventTypesList(points).forEach((item) => {
     const pointsWithType = points.filter((point) => point.type === item);
-    list.push(pointsWithType.length);
+    typeQuantities.push(pointsWithType.length);
   });
 
-  list.sort(sortVal);
+  typeQuantities.sort(sortVal);
 
-  return list;
+  return typeQuantities;
 };
 
 const generateDurationForType = (points) => {
-  const list = [];
-  eventTypesList(points).forEach((item) => {
+  const durations = [];
+  generateEventTypesList(points).forEach((item) => {
     const pointsWithType = points.filter((point) => point.type === item);
     let durationForType = 0;
     pointsWithType.forEach((subitem) => {
@@ -72,19 +72,19 @@ const generateDurationForType = (points) => {
         durationForType += pointDuration;
       }
     });
-    list.push(durationForType);
+    durations.push(durationForType);
   });
 
-  list.sort(sortVal);
+  durations.sort(sortVal);
 
-  return list;
+  return durations;
 };
 
 const renderMoneyChart = (moneyCtx, points) => new Chart(moneyCtx, {
   plugins: [ChartDataLabels],
   type: 'horizontalBar',
   data: {
-    labels: eventTypesListCaps(points),
+    labels: generateEventTypesListCaps(points),
     datasets: [{
       data: generateMoneyValuesForType(points),
       backgroundColor: '#ffffff',
@@ -149,7 +149,7 @@ const renderTypeChart = (typeCtx, points) => new Chart(typeCtx, {
   plugins: [ChartDataLabels],
   type: 'horizontalBar',
   data: {
-    labels: eventTypesListCaps(points),
+    labels: generateEventTypesListCaps(points),
     datasets: [{
       data: generateQuantityForType(points),
       backgroundColor: '#ffffff',
@@ -214,7 +214,7 @@ const renderTimeChart = (timeCtx, points) => new Chart(timeCtx, {
   plugins: [ChartDataLabels],
   type: 'horizontalBar',
   data: {
-    labels: eventTypesListCaps(points),
+    labels: generateEventTypesListCaps(points),
     datasets: [{
       data: generateDurationForType(points),
       backgroundColor: '#ffffff',
@@ -275,4 +275,4 @@ const renderTimeChart = (timeCtx, points) => new Chart(timeCtx, {
   },
 });
 
-export {eventTypesList, renderMoneyChart, renderTypeChart, renderTimeChart};
+export {generateEventTypesList, renderMoneyChart, renderTypeChart, renderTimeChart};

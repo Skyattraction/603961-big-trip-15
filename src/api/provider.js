@@ -1,4 +1,4 @@
-import RoutePointsModel from '../model/route.js';
+import RouteModel from '../model/route.js';
 import {isOnline} from '../utils/common.js';
 
 const getSyncedPoints = (items) =>
@@ -30,7 +30,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getOffers()
         .then((offers) => {
-          const items = createNoIdStoreStructure(RoutePointsModel.adaptToStore(offers));
+          const items = createNoIdStoreStructure(RouteModel.adaptToStore(offers));
           this._offersStore.setItems(items);
           return offers;
         });
@@ -45,7 +45,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getDestinations()
         .then((destinations) => {
-          const items = createNoIdStoreStructure(RoutePointsModel.adaptToStore(destinations));
+          const items = createNoIdStoreStructure(RouteModel.adaptToStore(destinations));
           this._destinationStore.setItems(items);
           return destinations;
         });
@@ -60,7 +60,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getPoints()
         .then((points) => {
-          const items = createStoreStructure(points.map(RoutePointsModel.adaptToServer));
+          const items = createStoreStructure(points.map(RouteModel.adaptToServer));
           this._store.setItems(items);
           return points;
         });
@@ -68,19 +68,19 @@ export default class Provider {
 
     const storePoints = Object.values(this._store.getItems());
 
-    return Promise.resolve(storePoints.map(RoutePointsModel.adaptToClient));
+    return Promise.resolve(storePoints.map(RouteModel.adaptToClient));
   }
 
   updatePoint(point) {
     if (isOnline()) {
       return this._api.updatePoint(point)
         .then((updatedPoint) => {
-          this._store.setItem(updatedPoint.id, RoutePointsModel.adaptToServer(updatedPoint));
+          this._store.setItem(updatedPoint.id, RouteModel.adaptToServer(updatedPoint));
           return updatedPoint;
         });
     }
 
-    this._store.setItem(point.id, RoutePointsModel.adaptToServer(Object.assign({}, point)));
+    this._store.setItem(point.id, RouteModel.adaptToServer(Object.assign({}, point)));
 
     return Promise.resolve(point);
   }
@@ -89,7 +89,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.addPoint(point)
         .then((newPoint) => {
-          this._store.setItem(newPoint.id, RoutePointsModel.adaptToServer(newPoint));
+          this._store.setItem(newPoint.id, RouteModel.adaptToServer(newPoint));
           return newPoint;
         });
     }

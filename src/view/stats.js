@@ -1,6 +1,6 @@
 
 import AbstractView from './abstract.js';
-import {eventTypesList, renderMoneyChart, renderTypeChart, renderTimeChart} from '../utils/stats.js';
+import {generateEventTypesList, renderMoneyChart, renderTypeChart, renderTimeChart} from '../utils/stats.js';
 import {BAR_HEIGHT} from '../const.js';
 
 const createStatsTemplate = () => `<section class="statistics">
@@ -19,7 +19,7 @@ const createStatsTemplate = () => `<section class="statistics">
   </div>
 </section>`;
 
-export default class StatsView extends AbstractView {
+export default class Stats extends AbstractView {
   constructor(points) {
     super();
 
@@ -44,7 +44,7 @@ export default class StatsView extends AbstractView {
     this._typeChart = renderTypeChart(typeCtx, points);
     this._timeChart = renderTimeChart(timeCtx, points);
 
-    const quantity = eventTypesList(points).length;
+    const quantity = generateEventTypesList(points).length;
 
     moneyCtx.height = BAR_HEIGHT * quantity;
     typeCtx.height = BAR_HEIGHT * quantity;
